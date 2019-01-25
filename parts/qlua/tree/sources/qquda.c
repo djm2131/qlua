@@ -6,6 +6,7 @@
 #include "latdirferm.h"                                              /* DEPS */
 #include "qquda.h"                                                   /* DEPS */
 #include "quda.h"
+#include <assert.h>
 #include <string.h>
 
 #define QUDA_REAL double
@@ -338,6 +339,14 @@ qq_ip_put(lua_State *L)
   
 #define PUT_INT_VALUE(name) if (strcmp(fld, #name) == 0) { \
     p->name = luaL_checkint(L, 3); return 0; }
+#define PUT_DOUBLE_ARRAY_VALUE(name, n) if(strcmp(fld, #name) == 0) { \
+    for(int i=1; i<=n; i++){ \
+      assert(L && lua_type(L,-1) == LUA_TTABLE); \
+      lua_pushinteger(L,i); \
+      lua_gettable(L,-2); \
+      if(lua_isnumber(L,-1)){ p->name[i-1] = lua_tonumber(L,-1); } \
+      lua_pop(L,1); \
+    } return 0; }
 #define PUT_DOUBLE_VALUE(name) if (strcmp(fld, #name) == 0) { \
     p->name = luaL_checknumber(L, 3); return 1; }
 #define PUT_NAMED_VALUE(t,name)  if (strcmp(fld, #name) == 0) { \
@@ -388,6 +397,7 @@ qq_ip_put(lua_State *L)
   PUT_DOUBLE_VALUE(mu);
   PUT_DOUBLE_VALUE(omega);
   PUT_DOUBLE_VALUE(reliable_delta);
+  PUT_DOUBLE_VALUE(residue0);
   PUT_DOUBLE_VALUE(secs);
   PUT_DOUBLE_VALUE(spinorGiB);
   PUT_DOUBLE_VALUE(tol);
@@ -421,9 +431,12 @@ qq_ip_put(lua_State *L)
   PUT_INT_VALUE(use_reduced_vector_set);
   PUT_INT_VALUE(use_resident_solution);
   PUT_INT_VALUE(use_sloppy_partial_accumulator);
+  PUT_DOUBLE_ARRAY_VALUE(offset, p->num_offset);
+  PUT_DOUBLE_ARRAY_VALUE(residue, p->num_offset);
 
 #undef PUT_NAMED_VALUE
 #undef PUT_DOUBLE_VALUE
+#undef PUT_DOUBLE_ARRAY_VALUE
 #undef PUT_INT_VALUE
 
   luaL_error(L, "invalid or unsettable InvertParam element");
@@ -751,6 +764,30 @@ qq_invertQuda(lua_State *L)
 }
 
 static int
+qq_applyRatFuncQuda(lua_State* L)
+{
+  QDP_D3_DiracFermion* in = qlua_checkLatDirFerm3(L, 1, NULL, 3) -> ptr;
+  QudaInvertParam* p = qq_checkInvertParam(L,2);
+  mLattice* S = qlua_ObjLattice(L,1);
+  QDP_D3_DiracFermion* out = qlua_newZeroLatDirFerm3(L, lua_gettop(L), 3) -> ptr;
+
+  QUDA_REAL* q_in;
+  QUDA_REAL* q_out;
+  CALL_QDP(L);
+  get_fermion_field(&q_in, in, L, S);
+  get_fermion_field(&q_out, out, L, S);
+
+  applyRatFuncQuda(q_out, q_in, p);
+
+  put_fermion_field(out, q_out, L, S);
+
+  free_fermion_field(&q_in, in, L, S);
+  free_fermion_field(&q_out, out, L, S);
+
+  return 1;
+}
+
+static int
 qq_performAPEnStep(lua_State *L)
 {
   int nSteps = luaL_checkint(L, 1);
@@ -774,6 +811,7 @@ static struct luaL_Reg fquda[] = {
   {"freeCloverQuda",          qq_freeCloverQuda        },
   {"freeGaugeQuda",           qq_freeGaugeQuda         },
   {"invertQuda",              qq_invertQuda            },
+  {"applyRatFuncQuda",        qq_applyRatFuncQuda      },
   {"loadCloverQuda",          qq_loadCloverQuda        },
   {"loadGaugeQuda",           qq_loadGaugeQuda         },
   {"performAPEnStep",         qq_performAPEnStep       },
