@@ -2756,6 +2756,356 @@ void invertMultiShiftQuda(void **_hp_x, void *_hp_b, QudaInvertParam *param)
   profileMulti.TPSTOP(QUDA_PROFILE_TOTAL);
 }
 
+/*! 
+ * Uses the multishift inverter to apply a rational function to the source
+ *
+ * At present, the solution_type must be MATDAG_MAT or MATPCDAG_MATPC,
+ * and solve_type must be NORMOP or NORMOP_PC.  The solution and solve
+ * preconditioning have to match.
+ */
+void applyRatFuncQuda(void* hp_x, void* hp_b, QudaInvertParam* param)
+{
+  // FIXME: DJM: Debug!!
+  printf("residue0 = %1.8e\n", param->residue0);
+  for(int i=0; i<param->num_offset; i++){
+    printf("residue[%d] = %1.8e\n", i, param->residue[i]);
+  }
+  for(int i=0; i<param->num_offset; i++){
+    printf("pole[%d] = %1.8e\n", i, param->offset[i]);
+  }
+
+  setTuning(param->tune);
+
+  profileMulti.TPSTART(QUDA_PROFILE_TOTAL);
+
+  if (param->dslash_type == QUDA_DOMAIN_WALL_DSLASH ||
+      param->dslash_type == QUDA_DOMAIN_WALL_4D_DSLASH ||
+      param->dslash_type == QUDA_MOBIUS_DWF_DSLASH) setKernelPackT(true);
+
+  if (!initialized) errorQuda("QUDA not initialized");
+
+  checkInvertParam(param);
+
+  // check the gauge fields have been created
+  cudaGaugeField *cudaGauge = checkGauge(param);
+
+  if (param->num_offset > QUDA_MAX_MULTI_SHIFT) 
+    errorQuda("Number of shifts %d requested greater than QUDA_MAX_MULTI_SHIFT %d", 
+        param->num_offset, QUDA_MAX_MULTI_SHIFT);
+
+  pushVerbosity(param->verbosity);
+
+  bool pc_solution = (param->solution_type == QUDA_MATPC_SOLUTION) || (param->solution_type == QUDA_MATPCDAG_MATPC_SOLUTION);
+  bool pc_solve = (param->solve_type == QUDA_DIRECT_PC_SOLVE) || (param->solve_type == QUDA_NORMOP_PC_SOLVE);
+  bool mat_solution = (param->solution_type == QUDA_MAT_SOLUTION) || (param->solution_type ==  QUDA_MATPC_SOLUTION);
+  bool direct_solve = (param->solve_type == QUDA_DIRECT_SOLVE) || (param->solve_type == QUDA_DIRECT_PC_SOLVE);
+
+  if (mat_solution) {
+    errorQuda("Multi-shift solver does not support MAT or MATPC solution types");
+  }
+  if (direct_solve) {
+    errorQuda("Multi-shift solver does not support DIRECT or DIRECT_PC solve types");
+  }
+  if (pc_solution & !pc_solve) {
+    errorQuda("Preconditioned (PC) solution_type requires a PC solve_type");
+  }
+  if (!pc_solution & pc_solve) {
+    errorQuda("In multi-shift solver, a preconditioned (PC) solve_type requires a PC solution_type");
+  }
+
+  // No of GiB in a checkerboard of a spinor
+  param->spinorGiB = cudaGauge->VolumeCB() * spinorSiteSize;
+  if( !pc_solve) param->spinorGiB *= 2; // Double volume for non PC solve
+
+  // **** WARNING *** this may not match implementation... 
+  if( param->inv_type == QUDA_CG_INVERTER ) { 
+    // CG-M needs 5 vectors for the smallest shift + 2 for each additional shift
+    param->spinorGiB *= (5 + 2*(param->num_offset-1))/(double)(1<<30);
+  } else {
+    errorQuda("QUDA only currently supports multi-shift CG");
+    // BiCGStab-M needs 7 for the original shift + 2 for each additional shift + 1 auxiliary
+    // (Jegerlehner hep-lat/9612014 eq (3.13)
+    param->spinorGiB *= (7 + 2*(param->num_offset-1))/(double)(1<<30);
+  }
+
+  // Timing and FLOP counters
+  param->secs = 0;
+  param->gflops = 0;
+  param->iter = 0;
+
+  for (int i=0; i<param->num_offset-1; i++) {
+    for (int j=i+1; j<param->num_offset; j++) {
+      if (param->offset[i] > param->offset[j])
+        errorQuda("Offsets must be ordered from smallest to largest");
+    }
+  }
+
+  // Copy of host pointer to source
+  void* hp_b_cp = hp_b;
+
+  // Create the matrix.
+  // The way this works is that createDirac will create 'd' and 'dSloppy'
+  // which are global. We then grab these with references...
+  //
+  // Balint: Isn't there a nice construction pattern we could use here? This is 
+  // expedient but yucky.
+  //  DiracParam diracParam; 
+  if (param->dslash_type == QUDA_ASQTAD_DSLASH || 
+      param->dslash_type == QUDA_STAGGERED_DSLASH){
+    param->mass = sqrt(param->offset[0]/4);  
+  }
+
+  Dirac *d = NULL;
+  Dirac *dSloppy = NULL;
+  Dirac *dPre = NULL;
+
+  // create the dirac operator
+  createDirac(d, dSloppy, dPre, *param, pc_solve);
+  Dirac &dirac = *d;
+  Dirac &diracSloppy = *dSloppy;
+
+  cudaColorSpinorField *b = NULL;   // Cuda RHS
+  cudaColorSpinorField **x = NULL;  // Cuda Solutions
+
+  // Grab the dimension array of the input gauge field.
+  const int *X = ( param->dslash_type == QUDA_ASQTAD_DSLASH ) ? 
+    gaugeFatPrecise->X() : gaugePrecise->X();
+
+  // This creates a ColorSpinorParam struct, from the host data
+  // pointer, the definitions in param, the dimensions X, and whether
+  // the solution is on a checkerboard instruction or not. These can
+  // then be used as 'instructions' to create the actual
+  // ColorSpinorField
+  ColorSpinorParam cpuParam(hp_b, *param, X, pc_solution);
+  ColorSpinorField *h_b = (param->input_location == QUDA_CPU_FIELD_LOCATION) ?
+    static_cast<ColorSpinorField*>(new cpuColorSpinorField(cpuParam)) : 
+    static_cast<ColorSpinorField*>(new cudaColorSpinorField(cpuParam));
+
+  cpuParam.v = hp_x;
+  ColorSpinorField* h_x = (param->output_location == QUDA_CPU_FIELD_LOCATION) ?
+    static_cast<ColorSpinorField*>(new cpuColorSpinorField(cpuParam)) :
+    static_cast<ColorSpinorField*>(new cudaColorSpinorField(cpuParam));
+
+  profileMulti.TPSTART(QUDA_PROFILE_H2D);
+  // Now I need a colorSpinorParam for the device
+  ColorSpinorParam cudaParam(cpuParam, *param);
+  // This setting will download a host vector
+  cudaParam.create = QUDA_COPY_FIELD_CREATE;
+  b = new cudaColorSpinorField(*h_b, cudaParam); // Creates b and downloads h_b to it
+  profileMulti.TPSTOP(QUDA_PROFILE_H2D);
+
+  // Preserve a copy of the source
+  cudaParam.create = QUDA_NULL_FIELD_CREATE;
+  cudaColorSpinorField b_cp(cudaParam);
+  copyCuda(b_cp, *b);
+
+  // Create the solution fields filled with zero
+  x = new cudaColorSpinorField* [ param->num_offset ];
+  cudaParam.create = QUDA_ZERO_FIELD_CREATE;
+  for(int i=0; i < param->num_offset; i++) { 
+    x[i] = new cudaColorSpinorField(cudaParam);
+  }
+
+  // Check source norms
+  double nb = norm2(*b);
+  if (nb==0.0) errorQuda("Solution has zero norm");
+
+  if(getVerbosity() >= QUDA_VERBOSE ) {
+    double nh_b = norm2(*h_b);
+    printfQuda("Source: CPU = %g, CUDA copy = %g\n", nh_b, nb);
+  }
+
+  // rescale the source vector to help prevent the onset of underflow
+  if (param->solver_normalization == QUDA_SOURCE_NORMALIZATION) {
+    axCuda(1.0/sqrt(nb), *b);
+  }
+
+  massRescale(*b, *param);
+
+  // use multi-shift CG
+  {
+    DiracMdagM m(dirac), mSloppy(diracSloppy);
+    SolverParam solverParam(*param);
+    MultiShiftCG cg_m(m, mSloppy, solverParam, profileMulti);
+    cg_m(x, *b);  
+    solverParam.updateInvertParam(*param);
+  }
+
+  // check each shift has the desired tolerance and use sequential CG to refine
+
+  cudaParam.create = QUDA_ZERO_FIELD_CREATE;
+  cudaColorSpinorField r(*b, cudaParam);
+#define REFINE_INCREASING_MASS
+#ifdef REFINE_INCREASING_MASS
+  for(int i=0; i < param->num_offset; i++) { 
+#else
+  for(int i=param->num_offset-1; i >= 0; i--) {
+#endif
+    double rsd_hq = param->residual_type & QUDA_HEAVY_QUARK_RESIDUAL ?
+      param->true_res_hq_offset[i] : 0;
+    double tol_hq = param->residual_type & QUDA_HEAVY_QUARK_RESIDUAL ?
+      param->tol_hq_offset[i] : 0;
+
+    /*
+      In the case where the shifted systems have zero tolerance
+      specified, we refine these systems until either the limit of
+      precision is reached (prec_tol) or until the tolerance reaches
+      the iterated residual tolerance of the previous multi-shift
+      solver (iter_res_offset[i]), which ever is greater.
+     */
+    const double prec_tol = pow(10.,(-2*(int)param->cuda_prec+2));
+    const double iter_tol = (param->iter_res_offset[i] < prec_tol ? prec_tol : (param->iter_res_offset[i] *1.1));
+    const double refine_tol = (param->tol_offset[i] == 0.0 ? iter_tol : param->tol_offset[i]);
+    // refine if either L2 or heavy quark residual tolerances have not been met, only if desired residual is > 0    
+    if ((param->true_res_offset[i] > refine_tol || rsd_hq > tol_hq)) {
+      if (getVerbosity() >= QUDA_SUMMARIZE) 
+        printfQuda("Refining shift %d: L2 residual %e / %e, heavy quark %e / %e (actual / requested)\n",
+            i, param->true_res_offset[i], param->tol_offset[i], rsd_hq, tol_hq);
+
+      // for staggered the shift is just a change in mass term (FIXME: for twisted mass also)
+      if (param->dslash_type == QUDA_ASQTAD_DSLASH || 
+          param->dslash_type == QUDA_STAGGERED_DSLASH) { 
+        dirac.setMass(sqrt(param->offset[i]/4));  
+        diracSloppy.setMass(sqrt(param->offset[i]/4));  
+      }
+
+      DiracMdagM m(dirac), mSloppy(diracSloppy);
+
+      // need to curry in the shift if we are not doing staggered
+      if (param->dslash_type != QUDA_ASQTAD_DSLASH &&
+          param->dslash_type != QUDA_STAGGERED_DSLASH) { 
+        m.shift = param->offset[i];
+        mSloppy.shift = param->offset[i];
+      }
+
+      if (0) { // experimenting with Minimum residual extrapolation
+	// only perform MRE using current and previously refined solutions
+#ifdef REFINE_INCREASING_MASS
+	const int nRefine = i+1;
+#else
+	const int nRefine = param->num_offset - i + 1;
+#endif
+
+	cudaColorSpinorField **q = new cudaColorSpinorField* [ nRefine ];
+	cudaColorSpinorField **z = new cudaColorSpinorField* [ nRefine ];
+	cudaParam.create = QUDA_NULL_FIELD_CREATE;
+	cudaColorSpinorField tmp(cudaParam);
+
+	for(int j=0; j < nRefine; j++) {
+	  q[j] = new cudaColorSpinorField(cudaParam);
+	  z[j] = new cudaColorSpinorField(cudaParam);
+	}
+
+	*z[0] = *x[0]; // zero solution already solved
+#ifdef REFINE_INCREASING_MASS
+	for (int j=1; j<nRefine; j++) *z[j] = *x[j];
+#else
+	for (int j=1; j<nRefine; j++) *z[j] = *x[param->num_offset-j];
+#endif
+
+	MinResExt mre(m, profileMulti);
+	copyCuda(tmp, *b);
+	mre(*x[i], tmp, z, q, nRefine);
+
+	for(int j=0; j < nRefine; j++) {
+	  delete q[j];
+	  delete z[j];
+	}
+	delete []q;
+	delete []z;
+      }
+
+      SolverParam solverParam(*param);
+      solverParam.iter = 0;
+      solverParam.use_init_guess = QUDA_USE_INIT_GUESS_YES;
+      solverParam.tol = (param->tol_offset[i] > 0.0 ?  param->tol_offset[i] : iter_tol); // set L2 tolerance
+      solverParam.tol_hq = param->tol_hq_offset[i]; // set heavy quark tolerance
+
+      CG cg(m, mSloppy, solverParam, profileMulti);
+      cg(*x[i], *b);        
+
+      solverParam.true_res_offset[i] = solverParam.true_res;
+      solverParam.true_res_hq_offset[i] = solverParam.true_res_hq;
+      solverParam.updateInvertParam(*param,i);
+
+      if (param->dslash_type == QUDA_ASQTAD_DSLASH ||
+          param->dslash_type == QUDA_STAGGERED_DSLASH) { 
+        dirac.setMass(sqrt(param->offset[0]/4)); // restore just in case
+        diracSloppy.setMass(sqrt(param->offset[0]/4)); // restore just in case
+      }
+
+    }
+  }
+
+  // restore shifts -- avoid side effects
+  for(int i=0; i < param->num_offset; i++) { 
+    param->offset[i] = unscaled_shifts[i];
+  }
+
+  profileMulti.TPSTART(QUDA_PROFILE_D2H);
+  for(int i=0; i < param->num_offset; i++) { 
+    if (param->solver_normalization == QUDA_SOURCE_NORMALIZATION) { // rescale the solution 
+      axCuda(sqrt(nb), *x[i]);
+    }
+
+    if (getVerbosity() >= QUDA_VERBOSE){
+      double nx = norm2(*x[i]);
+      printfQuda("Solution %d = %g\n", i, nx);
+    }
+  }
+  profileMulti.TPSTOP(QUDA_PROFILE_D2H);
+
+  // Accumulate result of applying ration function into x[0]
+  profileMulti.TPSTART(QUDA_PROFILE_D2H);
+  axpbyCuda(param->residue0, b_cp, param->residue[0], *x[0]);
+  for(int i=1; i<param->num_offset; i++){
+    axpyCuda(param->residue[i], *x[i], *x[0]);
+  }
+  profileMulti.TPSTOP(QUDA_PROFILE_D2H);
+
+  double nx = norm2(*x[0]);
+  if(getVerbosity() >= QUDA_VERBOSE ) {
+    double nh_x = norm2(*h_x);
+    printfQuda("Result: CPU = %g, CUDA copy = %g\n", nh_x, nx);
+  }
+
+  profileMulti.TPSTART(QUDA_PROFILE_D2H);
+  if(!param->make_resident_solution){ *h_x = *x[0]; }
+  profileMulti.TPSTOP(QUDA_PROFILE_D2H);
+
+  if (param->make_resident_solution) {
+    for (unsigned int i=0; i<solutionResident.size(); i++) {
+      if (solutionResident[i]) delete solutionResident[i];
+    }
+    solutionResident.resize(param->num_offset);
+    for (unsigned int i=0; i<solutionResident.size(); i++) {
+      solutionResident[i] = x[i];
+    }
+  }
+
+  for(int i=0; i < param->num_offset; i++){ 
+    if (!param->make_resident_solution) delete x[i];
+  }
+
+  delete h_x;
+  delete h_b;
+  delete b;
+
+  delete [] x;
+
+  delete [] hp_x;
+
+  delete d;
+  delete dSloppy;
+  delete dPre;
+
+  popVerbosity();
+
+  // FIXME: added temporarily so that the cache is written out even if a long benchmarking job gets interrupted
+  saveTuneCache(getVerbosity());
+
+  profileMulti.TPSTOP(QUDA_PROFILE_TOTAL);
+}
 
 void incrementalEigQuda(void *_h_x, void *_h_b, QudaInvertParam *param, void *_h_u, double *inv_eigenvals)
 {
@@ -5126,6 +5476,8 @@ void invert_quda_(void *hp_x, void *hp_b, QudaInvertParam *param)
 { invertQuda(hp_x, hp_b, param); }    
 void invert_multishift_quda_(void *hp_x[QUDA_MAX_MULTI_SHIFT], void *hp_b, QudaInvertParam *param)
 { invertMultiShiftQuda(hp_x, hp_b, param); }
+void apply_rat_func_quda_(void* hp_x, void* hp_b, QudaInvertParam* param)
+{ applyRatFuncQuda(hp_x, hp_b, param); }
 void new_quda_gauge_param_(QudaGaugeParam *param) {
   *param = newQudaGaugeParam();
 }

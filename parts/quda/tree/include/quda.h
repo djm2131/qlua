@@ -134,6 +134,8 @@ extern "C" {
     int overlap; /**< Width of domain overlaps */
 
     /** Offsets for multi-shift solver */
+    double residue0;
+    double residue[QUDA_MAX_MULTI_SHIFT];
     double offset[QUDA_MAX_MULTI_SHIFT];
 
     /** Solver tolerance for each offset */
@@ -530,6 +532,15 @@ extern "C" {
    *               storage and solver parameters
    */
   void invertMultiShiftQuda(void **_hp_x, void *_hp_b, QudaInvertParam *param);
+
+  /**
+   * Use the multishift solver to apply a rational function to the source
+   * @param hp_x   Output spinor field ( r(hp_b) )
+   * @param hp_b   Source spinor field
+   * @param param  Contains all metadata regarding host and device
+   *               storage and solver parameters
+   */
+  void applyRatFuncQuda(void* hp_x, void* hp_b, QudaInvertParam* param);
 
   /**
    * Deflated solvers interface (e.g., based on invremental deflation space constructors, like incremental eigCG).

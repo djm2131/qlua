@@ -245,8 +245,10 @@ void printQudaInvertParam(QudaInvertParam *param) {
 #endif
 
   if (param->num_offset > 0) {
+    P(residue0, INVALID_DOUBLE);
     for (int i=0; i<param->num_offset; i++) {
       P(offset[i], INVALID_DOUBLE);
+      P(residue[i], INVALID_DOUBLE);
       P(tol_offset[i], INVALID_DOUBLE);     
       if (param->residual_type & QUDA_HEAVY_QUARK_RESIDUAL)
 	P(tol_hq_offset[i], INVALID_DOUBLE);

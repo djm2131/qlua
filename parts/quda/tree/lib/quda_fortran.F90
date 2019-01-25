@@ -114,7 +114,9 @@ module quda_fortran
      integer(4) :: num_offset ! Number of offsets in the multi-shift solver
 
      integer(4) :: overlap ! width of domain overlaps
-     real(8), dimension(QUDA_MAX_MULTI_SHIFT) :: offset ! Offsets for multi-shift solver
+     real(8) :: residue0                                 ! Residue 0 for applying rat. func. via multi-shift solver
+     real(8), dimension(QUDA_MAX_MULTI_SHIFT) :: residue ! Residues 1,...,N for applying rat. func. via multi-shift solver
+     real(8), dimension(QUDA_MAX_MULTI_SHIFT) :: offset  ! Offsets (poles) 1,...,N for multi-shift solver
      real(8), dimension(QUDA_MAX_MULTI_SHIFT) :: tol_offset ! Solver tolerance for each offset
 
      ! Solver tolerance for each shift when refinement is applied using the heavy-quark residual
