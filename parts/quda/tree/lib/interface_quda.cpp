@@ -3055,7 +3055,7 @@ void applyRatFuncQuda(void* hp_x, void* hp_b, QudaInvertParam* param)
   }
   profileMulti.TPSTOP(QUDA_PROFILE_D2H);
 
-  // Accumulate result of applying ration function into x[0]
+  // Accumulate result of applying rational function into x[0]
   profileMulti.TPSTART(QUDA_PROFILE_D2H);
   axpbyCuda(param->residue0, b_cp, param->residue[0], *x[0]);
   for(int i=1; i<param->num_offset; i++){
@@ -3063,15 +3063,15 @@ void applyRatFuncQuda(void* hp_x, void* hp_b, QudaInvertParam* param)
   }
   profileMulti.TPSTOP(QUDA_PROFILE_D2H);
 
-  double nx = norm2(*x[0]);
-  if(getVerbosity() >= QUDA_VERBOSE ) {
-    double nh_x = norm2(*h_x);
-    printfQuda("Result: CPU = %g, CUDA copy = %g\n", nh_x, nx);
-  }
-
   profileMulti.TPSTART(QUDA_PROFILE_D2H);
   if(!param->make_resident_solution){ *h_x = *x[0]; }
   profileMulti.TPSTOP(QUDA_PROFILE_D2H);
+  
+  if(getVerbosity() >= QUDA_VERBOSE ) {
+    double nx = norm2(*x[0]);
+    double nh_x = norm2(*h_x);
+    printfQuda("Result: CPU = %g, CUDA copy = %g\n", nh_x, nx);
+  }
 
   if (param->make_resident_solution) {
     for (unsigned int i=0; i<solutionResident.size(); i++) {
