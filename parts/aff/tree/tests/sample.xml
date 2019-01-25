@@ -1,0 +1,295 @@
+<?xml version="1.0"?>
+
+
+<hadspec>
+  <update_no>0</update_no>
+  <ProgramInfo>
+    <code_version>
+      <chroma>3.22.7</chroma>
+      <qdp>1.23.0</qdp>
+    </code_version>
+    <run_date>25 May 07 17:13:19 EDT</run_date>
+    <Setgeom>
+      <latt_size>24 24 24 64</latt_size>
+      <logical_size>4 4 4 16</logical_size>
+      <subgrid_size>6 6 6 4</subgrid_size>
+      <total_volume>884736</total_volume>
+      <subgrid_volume>864</subgrid_volume>
+    </Setgeom>
+  </ProgramInfo>
+  <Input>
+    <Param>
+      <version>1</version>
+      <MesonP>true</MesonP>
+      <CurrentP>false</CurrentP>
+      <BaryonP>true</BaryonP>
+      <time_rev>false</time_rev>
+      <mom2_max>0</mom2_max>
+      <avg_equiv_mom>false</avg_equiv_mom>
+    </Param>
+    <NamedObject>
+      <gauge_id>default_gauge_field</gauge_id>
+      <sink_pairs>
+        <elem>
+          <first_id>pt_prop</first_id>
+          <second_id>pt_prop</second_id>
+        </elem>
+      </sink_pairs>
+    </NamedObject>
+    <xml_file>hspectrum/pt.4905</xml_file>
+  </Input>
+  <Config_info><NERSC>
+      <mat_size>12</mat_size>
+      <float_size>8</float_size>
+      <nrow>24 24 24 64</nrow>
+      <boundary>1 1 1 1</boundary>
+      <w_plaq>0.5882711911</w_plaq>
+      <link>-2.573979628e-05</link>
+      <ensemble_id>100</ensemble_id>
+      <ensemble_label>RBC_24x64x16_Iwasaki_2.13_2+1_0.01_0.04_DWF_H_RG_QUOTIENT</ensemble_label>
+      <creator>RBC</creator>
+      <creator_hardware>CU-QCDOC one rack</creator_hardware>
+      <creation_date>Thu Jan  1 07:41:06 1970</creation_date>
+      <archive_date>Thu Jan  1 07:41:06 1970</archive_date>
+      <sequence_number>4905</sequence_number>
+      <checksum>da0a609b</checksum>
+    </NERSC>
+
+
+
+
+  </Config_info>
+  <Output_version>
+    <out_version>14</out_version>
+  </Output_version>
+  <Observables>
+    <w_plaq>0.588271191115751</w_plaq>
+    <s_plaq>0.588445188090742</s_plaq>
+    <t_plaq>0.588097194140759</t_plaq>
+    <plane_01_plaq>0.58832053083963</plane_01_plaq>
+    <plane_02_plaq>0.588693412727645</plane_02_plaq>
+    <plane_12_plaq>0.588321620704952</plane_12_plaq>
+    <plane_03_plaq>0.588027972917408</plane_03_plaq>
+    <plane_13_plaq>0.588152298157896</plane_13_plaq>
+    <plane_23_plaq>0.588111311346973</plane_23_plaq>
+    <link>-2.57397962771025e-05</link>
+    <pollp>
+      <elem0>
+        <re>-0.00122149563276612</re>
+        <im>0.00152029730666537</im>
+      </elem0>
+      <elem1>
+        <re>-0.000654778849206999</re>
+        <im>-0.000204129780797232</im>
+      </elem1>
+      <elem2>
+        <re>0.00234446034582547</re>
+        <im>5.05163847612768e-06</im>
+      </elem2>
+      <elem3>
+        <re>0.0019443807599659</re>
+        <im>-0.000645210658633321</im>
+      </elem3>
+    </pollp>
+  </Observables>
+  <Wilson_hadron_measurements>
+    <elem>
+      <Mass_1>0.01</Mass_1>
+      <Mass_2>0.01</Mass_2>
+      <t0>0</t0>
+      <Forward_prop_headers>
+        <First_forward_prop>
+          <version>1</version>
+          <PropSink>
+            <version>5</version><Sink>
+      <version>2</version>
+      <SinkType>POINT_SINK</SinkType>
+      <j_decay>3</j_decay>
+    </Sink>
+
+            <j_decay>3</j_decay>
+          </PropSink>
+          <ForwardProp>
+            <version>9</version>
+            <quarkSpinType>FULL</quarkSpinType>
+            <obsvP>true</obsvP><FermionAction>
+      <FermAct>DWF</FermAct>
+      <OverMass>1.8</OverMass>
+      <Mass>0.01</Mass>
+      <N5>16</N5>
+      <boundary> 1  1  1 -1</boundary>
+    </FermionAction>
+<InvertParam>
+      <invType>CG_INVERTER</invType>
+      <RsdCG>1.0e-8</RsdCG>
+      <MaxCG>20000</MaxCG>
+      <numRestarts>1</numRestarts>
+    </InvertParam>
+</ForwardProp>
+          <PropSource>
+            <version>6</version><Source>
+      <version>2</version>
+      <SourceType>SHELL_SOURCE</SourceType>
+      <j_decay>3</j_decay>
+      <t_srce>0 0 0 0</t_srce>
+      <SmearingParam>
+        <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+        <wvf_param>4.35</wvf_param>
+        <wvfIntPar>0</wvfIntPar>
+<!-- No source smearing, point source to save time -->
+        <no_smear_dir>3</no_smear_dir>
+      </SmearingParam>
+    </Source>
+
+            <j_decay>3</j_decay>
+            <t_source>0</t_source>
+          </PropSource>
+          <Config_info><NERSC>
+      <mat_size>12</mat_size>
+      <float_size>8</float_size>
+      <nrow>24 24 24 64</nrow>
+      <boundary>1 1 1 1</boundary>
+      <w_plaq>0.5882711911</w_plaq>
+      <link>-2.573979628e-05</link>
+      <ensemble_id>100</ensemble_id>
+      <ensemble_label>RBC_24x64x16_Iwasaki_2.13_2+1_0.01_0.04_DWF_H_RG_QUOTIENT</ensemble_label>
+      <creator>RBC</creator>
+      <creator_hardware>CU-QCDOC one rack</creator_hardware>
+      <creation_date>Thu Jan  1 07:41:06 1970</creation_date>
+      <archive_date>Thu Jan  1 07:41:06 1970</archive_date>
+      <sequence_number>4905</sequence_number>
+      <checksum>da0a609b</checksum>
+    </NERSC>
+</Config_info>
+        </First_forward_prop>
+        <Second_forward_prop>
+          <version>1</version>
+          <PropSink>
+            <version>5</version><Sink>
+      <version>2</version>
+      <SinkType>POINT_SINK</SinkType>
+      <j_decay>3</j_decay>
+    </Sink>
+
+            <j_decay>3</j_decay>
+          </PropSink>
+          <ForwardProp>
+            <version>9</version>
+            <quarkSpinType>FULL</quarkSpinType>
+            <obsvP>true</obsvP><FermionAction>
+      <FermAct>DWF</FermAct>
+      <OverMass>1.8</OverMass>
+      <Mass>0.01</Mass>
+      <N5>16</N5>
+      <boundary> 1  1  1 -1</boundary>
+    </FermionAction>
+<InvertParam>
+      <invType>CG_INVERTER</invType>
+      <RsdCG>1.0e-8</RsdCG>
+      <MaxCG>20000</MaxCG>
+      <numRestarts>1</numRestarts>
+    </InvertParam>
+</ForwardProp>
+          <PropSource>
+            <version>6</version><Source>
+      <version>2</version>
+      <SourceType>SHELL_SOURCE</SourceType>
+      <j_decay>3</j_decay>
+      <t_srce>0 0 0 0</t_srce>
+      <SmearingParam>
+        <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+        <wvf_param>4.35</wvf_param>
+        <wvfIntPar>0</wvfIntPar>
+<!-- No source smearing, point source to save time -->
+        <no_smear_dir>3</no_smear_dir>
+      </SmearingParam>
+    </Source>
+
+            <j_decay>3</j_decay>
+            <t_source>0</t_source>
+          </PropSource>
+          <Config_info><NERSC>
+      <mat_size>12</mat_size>
+      <float_size>8</float_size>
+      <nrow>24 24 24 64</nrow>
+      <boundary>1 1 1 1</boundary>
+      <w_plaq>0.5882711911</w_plaq>
+      <link>-2.573979628e-05</link>
+      <ensemble_id>100</ensemble_id>
+      <ensemble_label>RBC_24x64x16_Iwasaki_2.13_2+1_0.01_0.04_DWF_H_RG_QUOTIENT</ensemble_label>
+      <creator>RBC</creator>
+      <creator_hardware>CU-QCDOC one rack</creator_hardware>
+      <creation_date>Thu Jan  1 07:41:06 1970</creation_date>
+      <archive_date>Thu Jan  1 07:41:06 1970</archive_date>
+      <sequence_number>4905</sequence_number>
+      <checksum>da0a609b</checksum>
+    </NERSC>
+</Config_info>
+        </Second_forward_prop>
+      </Forward_prop_headers>
+      <Forward_prop_correlator>
+        <forward_prop_corr_1>0.631899084344824 0.263041101184133 0.100357379583774 0.0550831090539402 0.0400888557107864 0.0308018883687725 0.0228949941038723 0.0178539251585665 0.0141938724527165 0.0112487740056493 0.00848897104640413 0.0066134521488526 0.00493985954202902 0.00381181014742375 0.00294790984308666 0.00223774633299244 0.00176470289851629 0.00141257489177564 0.00117033858245316 0.00096999455872283 0.000773017683271777 0.00059415554788899 0.000451136813553704 0.000354481223415648 0.000288289728828194 0.000233927810791803 0.000187601988445116 0.000146513163384268 0.000124100251688522 0.000112941202016395 0.000105876520568535 9.67664877790374e-05 9.04371378920658e-05 9.41282461156914e-05 0.000103922059335037 0.000122379003106191 0.000150898016757122 0.000183947334789781 0.000230660489587727 0.000298619659239379 0.000396615947642165 0.00051025163223087 0.000647374313540125 0.000805707553052634 0.000960031172310608 0.0011214383242938 0.00135122613578796 0.00164681678002911 0.00203074761077879 0.002568637864513 0.00331858788585813 0.00432186008345014 0.00548209889244573 0.00660780744909232 0.00784515829834825 0.00931371355574383 0.0108549470857362 0.0128075254339514 0.0156743988068919 0.0202648837464652 0.0278974479598167 0.0447482206354634 0.087504879819071 0.262724176352163</forward_prop_corr_1>
+        <forward_prop_corr_2>0.631899084344824 0.263041101184133 0.100357379583774 0.0550831090539402 0.0400888557107864 0.0308018883687725 0.0228949941038723 0.0178539251585665 0.0141938724527165 0.0112487740056493 0.00848897104640413 0.0066134521488526 0.00493985954202902 0.00381181014742375 0.00294790984308666 0.00223774633299244 0.00176470289851629 0.00141257489177564 0.00117033858245316 0.00096999455872283 0.000773017683271777 0.00059415554788899 0.000451136813553704 0.000354481223415648 0.000288289728828194 0.000233927810791803 0.000187601988445116 0.000146513163384268 0.000124100251688522 0.000112941202016395 0.000105876520568535 9.67664877790374e-05 9.04371378920658e-05 9.41282461156914e-05 0.000103922059335037 0.000122379003106191 0.000150898016757122 0.000183947334789781 0.000230660489587727 0.000298619659239379 0.000396615947642165 0.00051025163223087 0.000647374313540125 0.000805707553052634 0.000960031172310608 0.0011214383242938 0.00135122613578796 0.00164681678002911 0.00203074761077879 0.002568637864513 0.00331858788585813 0.00432186008345014 0.00548209889244573 0.00660780744909232 0.00784515829834825 0.00931371355574383 0.0108549470857362 0.0128075254339514 0.0156743988068919 0.0202648837464652 0.0278974479598167 0.0447482206354634 0.087504879819071 0.262724176352163</forward_prop_corr_2>
+      </Forward_prop_correlator>
+      <SourceSinkType>
+        <source_type_1>SHELL_SOURCE</source_type_1>
+        <source_disp_type_1>NONE</source_disp_type_1>
+        <sink_type_1>POINT_SINK</sink_type_1>
+        <sink_disp_type_1>NONE</sink_disp_type_1>
+        <source_type_2>SHELL_SOURCE</source_type_2>
+        <source_disp_type_2>NONE</source_disp_type_2>
+        <sink_type_2>POINT_SINK</sink_type_2>
+        <sink_disp_type_2>NONE</sink_disp_type_2>
+      </SourceSinkType>
+      <Shell_Point_Wilson_Mesons>
+        <elem>
+          <gamma_value>0</gamma_value>
+          <momenta>
+            <elem>
+              <sink_mom_num>0</sink_mom_num>
+              <sink_mom>0 0 0</sink_mom>
+              <mesprop>
+                <elem0>
+                  <re>-0.579009236151663</re>
+                  <im>-1.05605708867167e-18</im>
+                </elem0>
+                <elem1>
+                  <re>-0.219702383189943</re>
+                  <im>2.58022028752269e-20</im>
+                </elem1>
+                <elem2>
+                  <re>-0.0633360785259939</re>
+                  <im>4.85859727120086e-20</im>
+                </elem2>
+                <elem3>
+                  <re>-0.0233950609172773</re>
+                  <im>7.0125106374405e-22</im>
+                </elem3>
+                <elem4>
+                  <re>-0.0123942933822317</re>
+                  <im>-1.81184479649787e-21</im>
+                </elem4>
+                <elem5>
+                  <re>-0.00764582500960747</re>
+                  <im>5.5900222274964e-22</im>
+                </elem5>
+                <elem6>
+                  <re>-0.00427740776332123</re>
+                  <im>-3.50271517816854e-22</im>
+                </elem6>
+                <elem7>
+                  <re>-0.00183447310894524</re>
+                  <im>-1.12265627727825e-21</im>
+                </elem7>
+                <elem8>
+                  <re>-0.000306606406009928</re>
+                  <im>3.88376744895968e-22</im>
+                </elem8>
+              </mesprop>
+            </elem>
+          </momenta>
+        </elem>
+      </Shell_Point_Wilson_Mesons>
+    </elem>
+  </Wilson_hadron_measurements>
+</hadspec>

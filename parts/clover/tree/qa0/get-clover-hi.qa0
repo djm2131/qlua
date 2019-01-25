@@ -1,0 +1,34 @@
+(include "types.qa0")
+
+;; r memory order:
+;;  [0][0][0][0].re
+;;  [0][0][0][0].im
+;;  [0][0][0][1].re
+;;  [0][0][0][1].im
+;;  ...
+;;  [0][0][nC-1][nP-1].im
+;;  [0][1][0][0].re
+;;  ...
+;;  [nC-1][nP-1][nC-1][nP-1].im
+;;
+(procedure get-clover-hi ([stem "get_clover_hi"]
+                      prec&color)
+           ([data      pointer "r"         "double *"                ]
+            [C         pointer "C"         "const struct CloverX *"  ]
+            [index     int     "p"         "size_t"                  ])
+
+   (op int-mul () (x) ([reg index] [const (size-of Clover)]))
+   (op pointer-add () (ptr) ([reg C] [reg x]))
+   (loop () (a [const 0] [const *colors*])
+     (loop () (i [const 0] [const *projected-fermion-dim*])
+       (loop () (b [const 0] [const *colors*])
+         (loop () (j [const 0] [const *projected-fermion-dim*])
+           (op qcd-clover-hi-offset () (aibj) ([reg a] [reg i] [reg b] [reg j]))
+           (op pointer-add () (p) ([reg ptr] [reg aibj]))
+           (load COMPLEX () v ([reg p]))
+           (op complex-real () (v-re) ([reg v]))
+           (op complex-imag () (v-im) ([reg v]))
+           (store double () ([reg data]) [reg v-re])
+           (store double () ([reg data] [const (size-of double)]) [reg v-im])
+           (op pointer-add () (data) ([reg data]
+                                      [const (* 2 (size-of double))])))))))

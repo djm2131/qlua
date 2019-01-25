@@ -1,0 +1,14 @@
+(include "types.qa0")
+
+(procedure mul-fermion ([stem "f_rmul1"]
+                          prec&color
+                          count-flops)
+           ([R         pointer "r"         "struct FermionX *"     ]
+            [size      int     "size"      "size_t"                   ]
+            [v         double  "v"         "double"                ])
+   (op qcd-zerof () (z) ())
+   (loop () (i [const 0] [reg size])
+     (load qcd-fermion () f ([reg R]))
+     (op qcd-maddf () (g) ([reg z] [reg v] [reg f]))
+     (store qcd-fermion () ([reg R]) [reg g])
+     (op pointer-add () (R) ([reg R] [const (size-of Fermion)]))))

@@ -1,0 +1,26 @@
+# make configuration for build template
+#
+
+QDP_TOP    = @qdp@
+QMP_TOP    = @qmp@
+GSL_TOP    = @gsl@
+QMP_CFLAGS = @qmp_cflags@
+QDP_CFLAGS = @qdp_cflags@
+GSL_CFLAGS = @gsl_cflags@
+
+QMP_LDFLAGS = @qmp_ldflags@
+QDP_LDFLAGS = @qdp_ldflags@
+
+QMP_LIBS    = @qmp_libs@
+QDP_LIBS    = @qdp_libs@
+GSL_LIBS    = @gsl_libs@
+CBLAS_LIBS  = @cblas_libs@
+
+CC         = @cc@
+CFLAGS     = @cflags@ $(QMP_CFLAGS) $(QDP_CFLAGS) $(GSL_CFLAGS)
+COPTS      = @copts@
+LDFLAGS    = @cflags@ $(QMP_LDFLAGS) $(QDP_LDFLAGS)
+LIBS       = $(QMP_LIBS) $(QDP_LIBS) $(GSL_LIBS) $(CBLAS_LIBS)
+AR         = @ar@
+RANLIB     = @ranlib@
+LIMPDIR    = @limpdir@

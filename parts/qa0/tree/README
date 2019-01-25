@@ -1,0 +1,6 @@
+This is a portable build of qa0.
+Development is done under Petite Chez Scheme version 7.3 on Mac OS X ppc,
+<http://www.scheme.com/>.
+
+Portable deployment with #F: <http://code.google.com/p/false/> revision 11.
+

@@ -1,0 +1,8 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+
+(procedure size-of-ab-table ([stem "sizeof_KiTable"]
+                             [return total int "size_t"])
+           ([l-s    int "Ls"     "size_t"])
+   (op int-mul () (total) ([reg l-s] [const (size-of double)])))

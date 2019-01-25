@@ -1,0 +1,7 @@
+(include "types.qa0")
+
+(procedure size-twist ([stem "sizeof_twist"]
+                       [return total int "size_t"]
+                       color)
+           ()
+   (op int-move () (total) ([const (size-of twist)])))

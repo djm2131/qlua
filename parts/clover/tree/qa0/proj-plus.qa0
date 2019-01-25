@@ -1,0 +1,21 @@
+(include "types.qa0")
+(include "defs-spin.qa0")
+
+(repeat ((d [const 0] [const *dim*]))
+   (procedure down-face ([stem "proj_g" d "plus"]
+                         prec&color
+                         count-flops)
+        ([res    pointer "res"    "struct ProjectedFermionX *" ]
+         [size   int     "size"   "size_t"                     ]
+         [link   pointer "link"   "const struct down_pack *"   ]
+         [src    pointer "src"    "const struct FermionX *"    ])
+     (loop () (i [const 0] [reg size])
+       (load int () index ([reg link] [const (offset-of down-pack fermion)]))
+       (op pointer-add () (link) ([reg link] [const (size-of down-pack)]))
+       (op int-mul () (src-off) ([reg index] [const (size-of Fermion)]))
+       (op pointer-add () (f-addr) ([reg src] [reg src-off]))
+       (load qcd-fermion () f ([reg f-addr]))
+       (macro project [const 'plus] [const d] [reg rr] [reg V] [reg f])
+       (store qcd-projected-fermion () ([reg res]) [reg rr])
+       (op pointer-add () (res) ([reg res]
+                                 [const (size-of Projected-Fermion)])))))

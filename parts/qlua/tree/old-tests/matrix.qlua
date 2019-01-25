@@ -1,0 +1,172 @@
+require "stdlib"
+
+mx_size = 10
+
+function show_rmatrix(n,m)
+   printf("------------- matrix %s: (%s)\n", n, tostring(m))
+   local a, b = m:dims()
+   for i = 0, a - 1 do
+      for j = 0, b -1 do
+         printf("  [%2d, %2d] = %15.10f\n", i, j, m[{i,j}])
+      end
+   end
+   printf("matrix %s -------------\n\n", n)
+end
+
+function show_rvector(n, v)
+   printf("------------- vector %s (%s):\n", n, tostring(v))
+   local a = #v
+   for i = 0, a - 1 do
+      printf("  [%2d] = %15.10f\n", i, v[i])
+   end
+   printf("vector %s -------------\n\n", n)  
+end
+
+function show_cmatrix(n,m)
+   printf("------------- matrix %s: (%s)\n", n, tostring(m))
+   local a, b = m:dims()
+   for i = 0, a - 1 do
+      for j = 0, b -1 do
+         printf("  [%2d, %2d] = %15.10f %+15.10fI\n", i, j,
+                m[{i,j}]:real(), m[{i,j}]:imag())
+      end
+   end
+   printf("matrix %s -------------\n\n", n)
+end
+
+function show_cvector(n, v)
+   printf("------------- vector %s (%s):\n", n, tostring(v))
+   local a = #v
+   for i = 0, a - 1 do
+      printf("  [%2d] = %15.10f %+15.10fI\n", i,
+             m[{i,j}]:real(), m[{i,j}]:imag())
+   end
+   printf("vector %s -------------\n\n", n)  
+end
+
+
+----- real case
+m = matrix.real{5,3}
+printf("m = %s\n", tostring(m))
+for i = 0, 5 - 1 do
+   for j = 0, 3 - 1 do
+      m[{i,j}] = math.cos((i + j) / 7) + math.sin(j / 5)
+   end
+end
+mq, mr = m:qr()
+show_rmatrix("q", mq)
+show_rmatrix("r", mr)
+show_rmatrix("m", m)
+show_rmatrix("qr-m", mq * mr - m)
+show_rmatrix("qq", mq:transpose() * mq)
+
+mx = matrix.real{mx_size,mx_size}
+for k = 0, mx_size - 1 do
+   mx[{k,k}] = 2
+end
+for k = 1, mx_size - 1 do
+   mx[{k-1,k}] = -1
+   mx[{k,k-1}] = -1
+end
+mx[{0,mx_size - 1}] = -0.999
+mx[{mx_size - 1,0}] = 10
+show_rmatrix("mx-1 transposed", mx:transpose())
+mx[{mx_size - 1,0}] = -0.999
+
+show_rmatrix("mx", mx)
+l2, b2 = mx:symmetric_eigen(mx_size - 2)
+show_rmatrix("b2", b2)
+show_rvector("l2", l2)
+l3, b3 = mx:symmetric_eigen(1, mx_size - 2)
+show_rmatrix("b3", b3)
+show_rvector("l3", l3)
+
+l, b = mx:symmetric_eigen()
+show_rmatrix("basis", b)
+printf("trace(b) = %15.10f\n", b:trace())
+show_rmatrix("diag", b:transpose() * mx * b)
+printf("trace(diag) = %15.10f\n", (b:transpose() * mx * b):trace())
+printf("trace(mx)   = %15.10f\n", mx:trace())
+show_rvector("lambda", l)
+show_rmatrix("unit", b:transpose() * b)
+det_b = b:det()
+printf("det(b)= %15.10f\n", det_b)
+printf("det(mx) = %15.10f\n", mx:det())
+xx = 1
+for n = 0, #l - 1 do
+   xx = xx * l[n]
+end
+printf("DET(mx) = %15.10f\n", xx)
+
+xm = mx:inverse()
+show_rmatrix("xm", xm)
+show_rmatrix("xm * mx", xm * mx)
+
+printf("real matrix arithmetics")
+mx = matrix.real{3,3}
+for i = 0, 2 do
+   mx[{i,i}] = i + 1
+   for j = i + 1, 2 do
+      mx[{i,j}] = i + j
+   end
+end
+show_rmatrix("mx", mx)
+show_rmatrix("mx * mx", mx * mx)
+show_rmatrix("mx + mx", mx + mx)
+show_rmatrix("3 * mx", 3 * mx)
+q = mx * 5; show_rmatrix("mx * 5", q)
+show_rmatrix("mx * 5 / 0.5", q / 0.5)
+
+--------- complex case
+
+mz = matrix.complex{2,2}
+mz[{0,0}] = complex(1,0)
+mz[{0,1}] = 2
+mz[{1,1}] = 3
+
+show_cmatrix("mz", mz)
+show_cmatrix("mz * mz", mz * mz)
+show_cmatrix("3 * mz", 3 * mz)
+show_cmatrix("mz * 5", mz * 5)
+show_cmatrix("mz / 2", mz / 2)
+show_cmatrix("(1+2i) * mz", complex(1,2) * mz)
+mq = mz * complex(2,-3); show_cmatrix("mz * (2-3i)", mq)
+show_cmatrix("mz *(2-3i) / (2-3i)", mq / complex(2,-3))
+show_cmatrix("mz/mz", mz:inverse() * mz)
+
+mz = matrix.complex{mx_size, mx_size}
+for i = 0, mx_size - 1 do
+  for j = i + 1, mx_size - 1 do
+     local a = math.sin((i+j)/65)
+     local b = math.cos((i-j)/(i + j + 6))
+     mz[{i,j}] = complex(a, b)
+     mz[{j,i}] = complex(a,-b)
+  end
+end
+l,mq = mz:hermitian_eigen()
+show_cmatrix("eigenvecs", mq)
+show_cmatrix("right: mq * mz * mq", mq:adjoin() * mz * mq)
+show_cmatrix("wrong: mq * mz * mq", mq * mz * mq:adjoin())
+show_rvector("lambda", l)
+q, r = mz:qr()
+show_cmatrix("q", q)
+show_cmatrix("q*q", q:adjoin() * q)
+show_cmatrix("r", r)
+show_cmatrix("qr-m", q * r - mz)
+
+show_cmatrix("mx", mz)
+l2, b2 = mz:hermitian_eigen(mx_size - 2)
+show_cmatrix("b2", b2)
+show_rvector("l2", l2)
+l3, b3 = mz:hermitian_eigen(1, mx_size - 3)
+show_cmatrix("b3", b3)
+show_rvector("l3", l3)
+
+show_cmatrix("b3+b3*", b3:transpose() + b3)
+show_cmatrix("b3:conj()", b3:conj() + b3)
+z = b3:trace()
+printf("b3:trace = %15.11f  %15.11f\n", z:real(), z:imag())
+z = b3:det()
+printf("b3:det = %15.11f  %15.11f\n", z:real(), z:imag())
+
+printf("DONE\n")

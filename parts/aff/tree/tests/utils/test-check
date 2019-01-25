@@ -1,0 +1,1 @@
+$RUN check	${TEST_DIR}/test.aff >/dev/null

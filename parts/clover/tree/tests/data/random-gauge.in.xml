@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<chroma>
+  <Param>
+    <InlineMeasurements>
+   <elem>
+     <Name>QIO_WRITE_NAMED_OBJECT</Name>
+     <Frequency>1</Frequency>
+     <NamedObject>
+       <object_id>default_gauge_field</object_id>
+       <object_type>Multi1dLatticeColorMatrixD</object_type>
+     </NamedObject>
+     <File>
+       <file_name>random-gauge</file_name>
+       <file_volfmt>SINGLEFILE</file_volfmt>
+     </File>
+   </elem>
+
+    </InlineMeasurements>
+    <nrow>8
+          8
+          8
+          16</nrow>
+  </Param>
+  <Cfg>
+    <cfg_type>WEAK_FIELD</cfg_type>
+    <cfg_file>dummy</cfg_file>
+  </Cfg>
+</chroma>

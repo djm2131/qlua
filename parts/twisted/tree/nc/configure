@@ -1,0 +1,279 @@
+#!/bin/sh -f
+
+VERSION="|:Version:|"
+NC="|:Nc:|"
+
+# show_help exit_code
+show_help() {
+  cat << EOF
+    usage: configure [options]
+
+    Options:
+
+     --help                 show this help and exit
+     --prefix=DIR           installation prefix
+     --bindir=DIR           use DIR instead of PREFIX/bin for executables
+     --libdir=DIR           use DIR instead of PREFIX/lib for libraries
+     --incdir=DIR           use DIR instead of PREFIX/include for headers
+     --docdir=DIR           use DIR instead of PREFIX/share/doc/twisted for docs
+     --with-qdp=DIR         use DIR/bin/qdp-config to query QDP configuration
+     --with-qmp=DIR         use DIR/bin/qmp-config to query QMP configuration
+     --with-gsl=DIR         use DIR/bin/gsl-config to query GSL configuration
+     --with-atlas=DIR       use ATLAS implementation of BLAS in DIR/lib
+     --target=TARGET        build target architecture, see below
+
+   Target architectures:
+
+     cee-32                K&R C on a 32-bit target
+     cee-64                K&R C on a 64-bit target
+     c99-32                ISO/IEC 9899 (aka C99) on a 32-bit target
+     c99-64                ISO/IEC 9899 (aka C99) on a 64-bit target
+     bgq/xlc               BG/Q with IBM XLC compiler
+
+   Environment variables:
+     CC                    C compiler to use
+     CFLAGS                Flags to pass to the compiler
+     COPTS                 Optimizations options
+     LD                    Link editor to use
+     LDFLAGS               Flags to pass to the linker
+     LIBS                  Extra libraries to use
+     AR                    Library archiver
+     RANLIB                Library indexing tool
+EOF
+exit $1
+}
+
+# search for CBLAS to add new optimized cblas library support
+
+# show_error arg ...
+show_error() {
+   echo "**** Configure error: $*" 1>&2
+   exit 1
+}
+
+# configuration variables
+prefix=
+bindir=
+libdir=
+incdir=
+docdir=
+
+# defaults
+default_prefix=/usr/local
+# rest is relative to prefix by default
+bindir_loc=bin
+libdir_loc=lib
+incdir_loc=include
+docdir_loc=share/doc/twisted
+default_cc=gcc
+default_cflags=""
+default_copts="-Wall"
+default_ld=gcc
+default_ldflags=""
+default_ar=ar
+default_ranlib="echo RANLIB"
+
+# process_args arg ...
+process_args() {
+  while [ $# -ne 0 ]; do
+    case "$1" in
+      --help)  show_help 0 ;;
+      --prefix=*)       prefix=`echo "$1" | sed -e 's/--prefix=//'`   ;;
+      --bindir=*)       bindir=`echo "$1" | sed -e 's/--bindir=//'`   ;;
+      --libdir=*)       libdir=`echo "$1" | sed -e 's/--libdir=//'`   ;;
+      --incdir=*)       incdir=`echo "$1" | sed -e 's/--incdir=//'`   ;;
+      --docdir=*)       docdir=`echo "$1" | sed -e 's/--docdir=//'`   ;;
+      --with-qdp=*)     qdp=`echo "$1" | sed -e 's/--with-qdp=//'`    ;;
+      --with-qmp=*)     qmp=`echo "$1" | sed -e 's/--with-qmp=//'`    ;;
+      --with-gsl=*)     gsl=`echo "$1" | sed -e 's/--with-gsl=//'`     ;;
+      --with-atlas=*)   atlas=`echo "$1" | sed -e 's/--with-atlas=//'` ;;
+      # handle other CBLAS implementations here
+      --target=*)       target=`echo "$1" | sed -e 's/--target=//'`   ;;
+      *) show_error "Unknown argument $1" ;;
+    esac
+    shift
+  done
+}
+
+# speciate_target
+speciate_target() {
+  case "$target" in
+    cee-32)
+       limpdir=cee-32
+       default_cc="gcc -m32 -std=c99"
+       default_cflags=""
+       default_copts="-Wall -O3"
+       default_ld="gcc -m32 -std=c99"
+       default_ldflags=""
+       default_libs=""
+       default_ar="ar"
+       default_ranlib="ranlib"
+       ;;
+    c99-32)
+       limpdir=c99-32
+       default_cc="gcc -m32 -std=c99"
+       default_cflags=""
+       default_copts="-Wall -O3"
+       default_ld="gcc -m32 -std=c99"
+       default_ldflags=""
+       default_libs=""
+       default_ar="ar"
+       default_ranlib="ranlib"
+       ;;
+    cee-64)
+       limpdir=cee-64
+       default_cc="gcc -m64 -std=c99"
+       default_cflags=""
+       default_copts="-Wall -O3"
+       default_ld="gcc -m64 -std=c99"
+       default_ldflags=""
+       default_libs=""
+       default_ar="ar"
+       default_ranlib="ranlib"
+       ;;
+    c99-64)
+       limpdir=c99-64
+       default_cc="gcc -m64 -std=c99"
+       default_cflags=""
+       default_cflags="-Wall -O3"
+       default_ld="gcc -m64 -std=c99"
+       default_ldflags=""
+       default_libs=""
+       default_ar="ar"
+       default_ranlib="ranlib"
+       ;;
+    bgq/xlc)
+       limpdir=bgq-xlc
+       default_cc="bgc99"
+       default_cflags=""
+       default_copts="-O3 -qstrict -qmaxmem=-1"
+       default_ld="bgc99"
+       default_ldflags=""
+       default_libs=""
+       default_ar="powerpc64-bgq-linux-ar"
+       default_ranlib="powerpc64-bgq-linux-ranlib"
+       ;;
+    *) show_error "Unsupported target $target" ;;
+  esac
+}
+
+# normalize
+normalize() {
+  prefix=${prefix:-$default_prefix}
+  bindir=${bindir:-$prefix/$bindir_loc}
+  libdir=${libdir:-$prefix/$libdir_loc}
+  incdir=${incdir:-$prefix/$incdir_loc}
+  docdir=${docdir:-$prefix/$docdir_loc}
+
+  # target speciation
+  speciate_target
+
+  # flags and defaults
+  cc="${CC:-$default_cc}"
+  cflags="${CFLAGS:-$default_cflags}"
+  copts="${COPTS:-$default_copts}"
+  default_ld="${cc:-$default_ld}"
+  ld="${LD:-$default_ld}"
+  ldflags="${LDFLAGS:-$default_ldflags}"
+  libs="${LIBS}"
+  ar="${AR:-$default_ar}"
+  ranlib="${RANLIB:-$default_ranlib}"
+  [ -z "$target" ] && show_error "No target specified"
+  [ -z "$qdp" ] && show_error "QDP must be explicitly specified"
+  [ -x $qdp/bin/qdp-config ] || show_error "No qdp-config found in $qdp"
+  qdp_cflags=`$qdp/bin/qdp-config --cflags`
+  qdp_ldflags=`$qdp/bin/qdp-config --ldflags`
+  qdp_libs=`$qdp/bin/qdp-config --libs`
+  [ -x $qmp/bin/qmp-config ] || show_error "No qmp-config found in $qmp"
+  qmp_cflags=`$qmp/bin/qmp-config --cflags`
+  qmp_ldflags=`$qmp/bin/qmp-config --ldflags`
+  qmp_libs=`$qmp/bin/qmp-config --libs`
+  # optimized CBLAS library
+  if [ ! -z "$atlas" ] ; then
+      cblas_libs="-L$atlas/lib -lcblas"
+  fi
+  [ -x $gsl/bin/gsl-config ] || show_error "No gsl-config found in $gsl"
+  gsl_cflags="-DHAVE_GSL `$gsl/bin/gsl-config --cflags`"
+  if [ -z "$cblas_libs" ] ; then
+      gsl_libs=`$gsl/bin/gsl-config --libs`
+  else
+      gsl_libs=`$gsl/bin/gsl-config --libs-without-cblas`
+  fi
+}
+
+# show_config
+show_config() {
+   echo "TWISTED configuration summary:"
+   echo "====================================="
+   echo "Version                 $VERSION"
+   echo "Nc                      $NC"
+   echo "====================================="
+   echo "prefix                  $prefix"
+   echo "binaries directory      $bindir"
+   echo "libraries directory     $libdir"
+   echo "headers directory       $incdir"
+   echo "doc directory           $docdir"
+   echo "C compiler              $cc"
+   echo "Compiler flags          $cflags"
+   echo "Compiler options        $copts"
+   echo "Link editor             $ld"
+   echo "Linking flags           $ldflags"
+   echo "Extra libraries         $libs"
+   echo "Archiver                $ar"
+   echo "Ranlib                  $ranlib"
+   echo "QDP location            $qdp"
+   echo "QMP location            $qmp"
+   echo "GSL location            $gsl"
+   # optimized CBLAS
+   [ -z "$atlas" ] || echo "ATLAS location          $atlas"
+   echo "Build target            $target"
+   echo "====================================="
+}
+
+# build_config input output
+build() {
+  sed < $1 \
+      -e "s|@bindir@|$bindir|g" \
+      -e "s|@libdir@|$libdir|g" \
+      -e "s|@incdir@|$incdir|g" \
+      -e "s|@docdir@|$docdir|g" \
+      -e "s|@cc@|$cc|g" \
+      -e "s|@cflags@|$cflags|g" \
+      -e "s|@copts@|$copts|g" \
+      -e "s|@ld@|$ld|g" \
+      -e "s|@ldflags@|$ldflags|g" \
+      -e "s|@libs@|$libs|g" \
+      -e "s|@ar@|$ar|g" \
+      -e "s|@ranlib@|$ranlib|g" \
+      -e "s|@qdp@|$qdp|g" \
+      -e "s|@qdp_cflags@|$qdp_cflags|g" \
+      -e "s|@qdp_ldflags@|$qdp_ldflags|g" \
+      -e "s|@qdp_libs@|$qdp_libs|g" \
+      -e "s|@qmp@|$qmp|g" \
+      -e "s|@qmp_cflags@|$qmp_cflags|g" \
+      -e "s|@qmp_ldflags@|$qmp_ldflags|g" \
+      -e "s|@qmp_libs@|$qmp_libs|g" \
+      -e "s|@target@|$target|g" \
+      -e "s|@limpdir@|$limpdir|g" \
+ | sed -e "s|@gsl@|$gsl|g" \
+       -e "s|@gsl_cflags@|$gsl_cflags|g" \
+       -e "s|@gsl_libs@|$gsl_libs|g" \
+       -e "s|@cblas_libs@|$cblas_libs|g" \
+      > $2 \
+|| show_error "Could not generate $2"
+}
+
+######
+
+if [ $# -eq 0 ]; then
+  show_help 1
+fi
+
+process_args $*
+normalize
+build twisted-config.in twisted-config
+chmod +x twisted-config
+build Makefile.in Makefile
+build target.in target
+show_config
+show_config > config.log

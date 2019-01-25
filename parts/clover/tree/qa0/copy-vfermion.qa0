@@ -1,0 +1,36 @@
+(include "types.qa0")
+
+;; F memory order:
+;;   0th index: lattice index
+;;   1st index: vector of fermions
+;;  fv[0][0]
+;;  fv[1][0]
+;;  ....
+;;  fv[size-1][0]
+;;  ::::: stride slack
+;;  fv[0][1]
+;;  ....
+;;
+(procedure copy-vfermion ([stem "vf_copy"]
+                         prec&color
+                         count-flops)
+           ([size      int     "size"      "size_t"                  ]
+            [len       int     "len"       "size_t"                  ]
+            [F         pointer "F"         "struct vFermion *"       ]
+            [fv-stride int     "fv_stride" "size_t"                  ]
+            [fv-begin  int     "fv_begin"  "size_t"                  ]
+            [G         pointer "G"         "const struct vFermion *" ]
+            [gv-stride int     "gv_strie"  "size_t"                  ]
+            [gv-begin  int     "gv_begin"  "size_t"                  ])
+   (op int-mul () (f-idx) ([reg fv-begin] [reg fv-stride]))
+   (op int-mul () (g-idx) ([reg gv-begin] [reg gv-stride]))
+   (op pointer-add () (F) ([reg F] [reg f-idx]))
+   (op pointer-add () (G) ([reg G] [reg g-idx]))
+   (loop () (c [const 0] [reg len])
+     (op pointer-move () (F-c) ([reg F]))
+     (op pointer-move () (G-c) ([reg G]))
+     (loop () (i [const 0] [reg size])
+       (load qcd-fermion () x-v ([reg G-c]))
+       (op pointer-add () (G-c) ([reg G-c] [const (size-of Fermion)]))
+       (store qcd-fermion () ([reg F-c]) [reg x-v])
+       (op pointer-add () (F-c) ([reg F-c] [const (size-of Fermion)])))))

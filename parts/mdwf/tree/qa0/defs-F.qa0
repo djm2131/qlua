@@ -1,0 +1,410 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+;; Macros for F
+(include "defs-spin.qa0")
+
+(define (get-up-mask&f&V remote? f-index V d mask nb U)
+  (op nop (start get-up-mask&f&V d) () ())
+  (op int-and () (remote?) ([reg mask] [const (shift 1 d)]))
+  (load int () U-idx ([reg nb] [const (offset-of neighbor up-u)]))
+  (op int-add () (U-idx-d) ([reg U-idx] [const d]))
+  (op int-mul () (U-off) ([reg U-idx-d] [const (size-of SU-n)]))
+  (op pointer-add () (U-addr) ([reg U] [reg U-off]))
+  (load qcd-su-n () V ([reg U-addr]))
+  (load int () f-index ([reg nb] [const (+ (offset-of neighbor up-f)
+                                           (* d (size-of int)))]))
+  (op nop (end get-up-mask&f&V d) () ()))
+
+(define (get-down-mask&f remote? f-index d mask nb)
+  (op nop (start get-down-mask&f d) () ())
+  (op int-and () (remote?) ([reg mask] [const (shift 1 (+ d *dim*))]))
+  (load int () f-index ([reg nb] [const (+ (offset-of neighbor down-f)
+                                           (* d (size-of int)))]))
+  (op nop (end get-down-mask&f d) () ()))
+
+(define (get-down-V V d nb U)
+  (op nop (start get-down-V d) () ())
+  (load int () U-idx ([reg nb] [const (+ (offset-of neighbor down-u)
+                                         (* d (size-of int)))]))
+  (op int-mul () (U-off) ([reg U-idx] [const (size-of SU-n)]))
+  (op pointer-add () (U-addr) ([reg U] [reg U-off]))
+  (load qcd-su-n () V ([reg U-addr]))
+  (op nop (end get-down-V d) () ()))
+
+;;;
+
+;; must agree with up/down buffer layout in port/comm-setup.c
+(define (up-boundary *f d buf*)
+  (op nop (up-boundary d begin) () ())
+  (load pointer () *f ([reg buf*] [const (* (size-of pointer) d)]))
+  (op nop (up-boundary d end) () ()))
+
+(define (down-boundary *f d buf*)
+  (op nop (down-boundary d begin) () ())
+  (load pointer () *f ([reg buf*] [const (* (size-of pointer) (+ d *dim*))]))
+  (op nop (down-boundary d end) () ()))
+
+(define (face-link q link-op g-op d r U f)
+  (op nop (start-face link-op g-op d) () ())
+  (load qcd-projected-fermion () h ([reg f]))
+  (op pointer-add () (f) ([reg f] [const (size-of Projected-Fermion)]))
+  (macro link-op [const g-op] [const d] [reg q] [reg r] [reg U] [reg h])
+  (store qcd-fermion () ([reg r]) [reg q])
+  (op pointer-add () (r) ([reg r] [const (size-of Fermion)]))
+  (op nop (end-face link-op g-op d) () ()))
+
+(define (face-line elem-op g-op d boundary l-s res-x V f-index s-line buf*)
+  (op nop (start face-line elem-op g-op d) () ())
+  (macro boundary [reg *f] [const d] [reg buf*])
+  (op int-mul () (f-off) ([reg f-index] [reg s-line]))
+  (op pointer-add () (f) ([reg *f] [reg f-off]))
+  (op pointer-move () (r) ([reg res-x]))
+  (loop () (s [const 0] [reg l-s])
+    (macro face-link [reg q] [macro elem-op] [const g-op] [const d]
+                     [reg r] [reg V] [reg f]))
+  (op nop (end face-line elem-op g-op d) () ()))
+
+(define (face-line-norm elem-op g-op d boundary l-s
+                        res-x norm V f-index s-line buf*)
+  (op nop (start face-line elem-op g-op d) () ())
+  (macro boundary [reg *f] [const d] [reg buf*])
+  (op int-mul () (f-off) ([reg f-index] [reg s-line]))
+  (op pointer-add () (f) ([reg *f] [reg f-off]))
+  (op pointer-move () (r) ([reg res-x]))
+  (loop () (s [const 0] [reg l-s])
+    (macro face-link [reg q] [macro elem-op] [const g-op] [const d]
+                     [reg r] [reg V] [reg f])
+    (op qcd-fnorm-add () (norm) ([reg norm] [reg q])))
+  (op nop (end face-line elem-op g-op d) () ()))
+;;;
+
+(define (body-link q link-op g-op d r U f)
+  (op nop (start-body link-op g-op d) () ())
+  (load qcd-fermion () hh ([reg f]))
+  (op pointer-add () (f) ([reg f] [const (size-of Fermion)]))
+  (macro link-op [const g-op] [const d] [reg q] [reg r] [reg U] [reg hh])
+  (store qcd-fermion () ([reg r]) [reg q])
+  (op pointer-add () (r) ([reg r] [const (size-of Fermion)]))
+  (op nop (end-body link-op g-op d) () ()))
+
+(define (body-line elem-op g-op d l-s res-x V f-index s-line src-y)
+  (op nop (start body-line elem-op g-op d) () ())
+  (op int-mul () (f-off) ([reg f-index] [reg s-line]))
+  (op pointer-add () (f) ([reg src-y] [reg f-off]))
+  (op pointer-move () (r) ([reg res-x]))
+  (loop () (s [const 0] [reg l-s])
+    (macro body-link [reg q] [macro elem-op] [const g-op] [const d]
+                     [reg r] [reg V] [reg f]))
+  (op nop (end body-line elem-op g-op d) () ()))
+
+(define (body-line-norm elem-op g-op d l-s res-x norm V f-index s-line src-y)
+  (op nop (start body-line-norm elem-op g-op d) () ())
+  (op int-mul () (f-off) ([reg f-index] [reg s-line]))
+  (op pointer-add () (f) ([reg src-y] [reg f-off]))
+  (op pointer-move () (r) ([reg res-x]))
+  (loop () (s [const 0] [reg l-s])
+    (macro body-link [reg q] [macro elem-op] [const g-op] [const d]
+                     [reg r] [reg V] [reg f])
+    (op qcd-fnorm-add () (norm) ([reg norm] [reg q])))
+  (op nop (end body-line-norm elem-op g-op d) () ()))
+
+;;;
+
+(define (F-start-up g-op d mask res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro get-up-mask&f&V [reg remote?] [reg f-index] [reg V]
+                         [const d] [reg mask] [reg nb] [reg U])
+  (op nop (F-start-up g-op d) () ())
+  (if-else [reg remote?]
+    (macro face-line [macro unproject-U] [const g-op]
+                     [const d] [macro up-boundary]
+                     [reg l-s] [reg res-x] [reg V]
+                     [reg f-index] [reg s-h-line] [reg buf*])
+    (macro body-line [macro one-x-gamma-U] [const g-op]
+                     [const d]
+                     [reg l-s] [reg res-x] [reg V]
+                     [reg f-index] [reg s-f-line] [reg src-y])))
+
+(define (F-start-down g-op d mask res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro get-down-mask&f [reg remote?] [reg f-index]
+                         [const d] [reg mask] [reg nb])
+  (op nop (F-start-down g-op d) () ())
+  (if-else [reg remote?]
+    (macro face-line [macro unproject] [const g-op]
+                     [const d] [macro down-boundary]
+                     [reg l-s] [reg res-x] [reg V]
+                     [reg f-index] [reg s-h-line] [reg buf*])
+    (begin
+      (macro get-down-V [reg V] [const d] [reg nb] [reg U])
+      (macro body-line [macro one-x-gamma-U*] [const g-op]
+                       [const d]
+                       [reg l-s] [reg res-x] [reg V]
+                       [reg f-index] [reg s-f-line] [reg src-y]))))
+
+(define (F-next-up g-op d mask res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro get-up-mask&f&V [reg remote?] [reg f-index] [reg V]
+                         [const d] [reg mask] [reg nb] [reg U])
+  (op nop (F-next-up g-op d) () ())
+  (if-else [reg remote?]
+    (macro face-line [macro add-unproject-U] [const g-op]
+                     [const d] [macro up-boundary]
+                     [reg l-s] [reg res-x] [reg V]
+                     [reg f-index] [reg s-h-line] [reg buf*])
+    (macro body-line [macro add-one-x-gamma-U] [const g-op]
+                     [const d]
+                     [reg l-s] [reg res-x] [reg V]
+                     [reg f-index] [reg s-f-line] [reg src-y])))
+
+(define (F-next-down g-op d mask res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro get-down-mask&f [reg remote?] [reg f-index]
+                         [const d] [reg mask] [reg nb])
+  (op nop (F-next-down g-op d) () ())
+  (if-else [reg remote?]
+    (macro face-line [macro add-unproject] [const g-op]
+                     [const d] [macro down-boundary]
+                     [reg l-s] [reg res-x] [reg V]
+                     [reg f-index] [reg s-h-line] [reg buf*])
+    (begin
+      (macro get-down-V [reg V] [const d] [reg nb] [reg U])
+      (macro body-line [macro add-one-x-gamma-U*] [const g-op]
+                       [const d]
+                       [reg l-s] [reg res-x] [reg V]
+                       [reg f-index] [reg s-f-line] [reg src-y]))))
+
+(define (F-next-up-norm g-op d mask res-x norm
+                        l-s s-f-line s-h-line nb U src-y buf*)
+  (macro get-up-mask&f&V [reg remote?] [reg f-index] [reg V]
+                         [const d] [reg mask] [reg nb] [reg U])
+  (op nop (F-next-up-norm g-op d) () ())
+  (if-else [reg remote?]
+    (macro face-line-norm [macro add-unproject-U] [const g-op]
+                          [const d] [macro up-boundary]
+                          [reg l-s] [reg res-x] [reg norm] [reg V]
+                          [reg f-index] [reg s-h-line] [reg buf*])
+    (macro body-line-norm [macro add-one-x-gamma-U] [const g-op]
+                          [const d]
+                          [reg l-s] [reg res-x] [reg norm] [reg V]
+                          [reg f-index] [reg s-f-line] [reg src-y])))
+
+(define (F-next-down-norm g-op d mask res-x norm
+                          l-s s-f-line s-h-line nb U src-y buf*)
+  (macro get-down-mask&f [reg remote?] [reg f-index]
+                         [const d] [reg mask] [reg nb])
+  (op nop (F-next-down-norm g-op d) () ())
+  (if-else [reg remote?]
+    (macro face-line-norm [macro add-unproject] [const g-op]
+                          [const d] [macro down-boundary]
+                          [reg l-s] [reg res-x] [reg norm] [reg V]
+                          [reg f-index] [reg s-h-line] [reg buf*])
+    (begin
+      (macro get-down-V [reg V] [const d] [reg nb] [reg U])
+      (macro body-line-norm [macro add-one-x-gamma-U*] [const g-op]
+                            [const d]
+                            [reg l-s] [reg res-x] [reg norm] [reg V]
+                            [reg f-index] [reg s-f-line] [reg src-y]))))
+
+(define (F-sub-up g-op d mask res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro get-up-mask&f&V [reg remote?] [reg f-index] [reg V]
+                         [const d] [reg mask] [reg nb] [reg U])
+  (op nop (F-sub-up g-op d) () ())
+  (if-else [reg remote?]
+    (macro face-line [macro sub-unproject-U] [const g-op]
+                     [const d] [macro up-boundary]
+                     [reg l-s] [reg res-x] [reg V]
+                     [reg f-index] [reg s-h-line] [reg buf*])
+    (macro body-line [macro sub-one-x-gamma-U] [const g-op]
+                     [const d] [reg l-s]
+                     [reg res-x] [reg V]
+                     [reg f-index] [reg s-f-line] [reg src-y])))
+
+(define (F-sub-down g-op d mask res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro get-down-mask&f [reg remote?] [reg f-index]
+                         [const d] [reg mask] [reg nb])
+  (op nop (F-sub-down g-op d) () ())
+  (if-else [reg remote?]
+    (macro face-line [macro sub-unproject] [const g-op]
+                     [const d] [macro down-boundary]
+                     [reg l-s] [reg res-x] [reg V]
+                     [reg f-index] [reg s-h-line] [reg buf*])
+    (begin
+      (macro get-down-V [reg V] [const d] [reg nb] [reg U])
+      (macro body-line [macro sub-one-x-gamma-U*] [const g-op]
+                       [const d] [reg l-s]
+                       [reg res-x] [reg V]
+                       [reg f-index] [reg s-f-line] [reg src-y]))))
+
+;;;
+
+(define (S-compute$-F up-sign down-sign res-x l-s s-f-line s-h-line
+                      nb U src-y buf*)
+  (load int () mask ([reg nb] [const (offset-of neighbor mask)]))
+  (op nop (First direction) () ())
+  (repeat ((d [const 0] [const *dim*]))
+    (if [const (= d *mdwf-start-sum-dimension*)]
+      (if-else [const (= up-sign *mdwf-start-sum-direction*)]
+        ;; start with up
+        (begin
+          (op nop (Start with d up) () ())
+          (macro F-start-up [const up-sign]
+                            [const d] [reg mask] [reg res-x]
+                            [reg l-s] [reg s-f-line] [reg s-h-line]
+                            [reg nb] [reg U] [reg src-y] [reg buf*])
+          (macro F-next-down [const down-sign]
+                             [const d] [reg mask] [reg res-x]
+                             [reg l-s] [reg s-f-line] [reg s-h-line]
+                             [reg nb] [reg U] [reg src-y] [reg buf*]))
+        ;; start with down
+        (begin
+          (op nop (Start with d down) () ())
+          (macro F-start-down [const down-sign]
+                              [const d] [reg mask] [reg res-x]
+                              [reg l-s] [reg s-f-line] [reg s-h-line]
+                              [reg nb] [reg U] [reg src-y] [reg buf*])
+          (macro F-next-up [const up-sign]
+                           [const d] [reg mask] [reg res-x]
+                           [reg l-s] [reg s-f-line] [reg s-h-line]
+                           [reg nb] [reg U] [reg src-y] [reg buf*])))))
+  (op nop (Other directions) () ())
+  (repeat ((d [const 0] [const *dim*]))
+    (if [const (not (= d *mdwf-start-sum-dimension*))]
+      (begin
+        ;; continue with up
+        (macro F-next-up [const up-sign]
+                         [const d] [reg mask] [reg res-x]
+                         [reg l-s] [reg s-f-line] [reg s-h-line]
+                         [reg nb] [reg U] [reg src-y] [reg buf*])
+        ;; continue with down               
+        (macro F-next-down [const down-sign]
+                           [const d] [reg mask] [reg res-x]
+                           [reg l-s] [reg s-f-line] [reg s-h-line]
+                           [reg nb] [reg U] [reg src-y] [reg buf*]))))
+  (op pointer-add () (nb) ([reg nb] [const (size-of neighbor)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg s-f-line])))
+
+(define (S-compute-F res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro S-compute$-F [const 'minus] [const 'plus]
+                      [reg res-x] [reg l-s] [reg s-f-line] [reg s-h-line]
+                      [reg nb] [reg U] [reg src-y] [reg buf*])) 
+
+(define (S-compute-F* res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro S-compute$-F [const 'plus] [const 'minus]
+                      [reg res-x] [reg l-s] [reg s-f-line] [reg s-h-line]
+                      [reg nb] [reg U] [reg src-y] [reg buf*])) 
+
+;;
+(define (S-compute$-add-F-norm up-sign down-sign
+                              res-x norm l-s s-f-line s-h-line nb U src-y buf*)
+  (load int () mask ([reg nb] [const (offset-of neighbor mask)]))
+  (repeat ((d [const 0] [const *dim*]))
+    ;; continue with up
+    (macro F-next-up-norm [const up-sign] [const d] [reg mask]
+                          [reg res-x] [reg norm]
+                          [reg l-s] [reg s-f-line] [reg s-h-line]
+                          [reg nb] [reg U] [reg src-y] [reg buf*])
+    ;; continue with down               
+    (macro F-next-down-norm [const down-sign] [const d] [reg mask]
+                            [reg res-x] [reg norm]
+                            [reg l-s] [reg s-f-line] [reg s-h-line]
+                            [reg nb] [reg U] [reg src-y] [reg buf*]))
+  (op pointer-add () (nb) ([reg nb] [const (size-of neighbor)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg s-f-line])))
+
+(define (S-compute-add-F-norm res-x norm l-s s-f-line s-h-line nb U src-y buf*)
+  (macro S-compute$-add-F-norm [const 'minus] [const 'plus]
+                               [reg res-x] [reg norm]
+                               [reg l-s] [reg s-f-line] [reg s-h-line]
+                               [reg nb] [reg U] [reg src-y] [reg buf*])) 
+
+(define (S-compute$-add-F up-sign down-sign res-x l-s s-f-line s-h-line
+                          nb U src-y buf*)
+  (load int () mask ([reg nb] [const (offset-of neighbor mask)]))
+  (repeat ((d [const 0] [const *dim*]))
+    ;; continue with up
+    (macro F-next-up [const up-sign]
+                     [const d] [reg mask] [reg res-x]
+                     [reg l-s] [reg s-f-line] [reg s-h-line]
+                     [reg nb] [reg U] [reg src-y] [reg buf*])
+    ;; continue with down               
+    (macro F-next-down [const down-sign]
+                       [const d] [reg mask] [reg res-x]
+                       [reg l-s] [reg s-f-line] [reg s-h-line]
+                       [reg nb] [reg U] [reg src-y] [reg buf*]))
+  (op pointer-add () (nb) ([reg nb] [const (size-of neighbor)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg s-f-line])))
+
+(define (S-compute-add-F res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro S-compute$-add-F [const 'minus] [const 'plus]
+                          [reg res-x] [reg l-s] [reg s-f-line] [reg s-h-line]
+                          [reg nb] [reg U] [reg src-y] [reg buf*])) 
+
+(define (S-compute-add-F* res-x l-s s-f-line s-h-line nb U src-y buf*)
+  (macro S-compute$-add-F [const 'plus] [const 'minus]
+                          [reg res-x] [reg l-s] [reg s-f-line] [reg s-h-line]
+                          [reg nb] [reg U] [reg src-y] [reg buf*]))
+
+;;
+(define (S-compute$-sub-F up-sign down-sign res-x l-s s-f-line s-h-line
+                          nb src-x U src-y buf*)
+  (load int () mask ([reg nb] [const (offset-of neighbor mask)]))
+  (op pointer-move () (r) ([reg res-x]))
+  (loop () (s [const 0] [reg l-s])
+    (load qcd-fermion () f ([reg src-x]))
+    (op pointer-add () (src-x) ([reg src-x] [const (size-of Fermion)]))
+    (store qcd-fermion () ([reg r]) [reg f])
+    (op pointer-add () (r) ([reg r] [const (size-of Fermion)])))
+  (repeat ((d [const 0] [const *dim*]))
+    ;; continue with up
+    (macro F-sub-up [const up-sign]
+                    [const d] [reg mask] [reg res-x]
+                    [reg l-s] [reg s-f-line] [reg s-h-line]
+                    [reg nb] [reg U] [reg src-y] [reg buf*])
+    ;; continue with down               
+    (macro F-sub-down [const down-sign]
+                      [const d] [reg mask] [reg res-x]
+                      [reg l-s] [reg s-f-line] [reg s-h-line]
+                      [reg nb] [reg U] [reg src-y] [reg buf*]))
+  (op pointer-add () (nb) ([reg nb] [const (size-of neighbor)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg s-f-line])))
+
+(define (S-compute-sub-F res-x l-s s-f-line s-h-line nb src-x U src-y buf*)
+  (macro S-compute$-sub-F [const 'minus] [const 'plus]
+                          [reg res-x] [reg l-s] [reg s-f-line] [reg s-h-line]
+                          [reg nb] [reg src-x] [reg U] [reg src-y] [reg buf*]))
+
+(define (S-compute-sub-F* res-x l-s s-f-line s-h-line nb src-x U src-y buf*)
+  (macro S-compute$-sub-F [const 'plus] [const 'minus]
+                          [reg res-x] [reg l-s] [reg s-f-line] [reg s-h-line]
+                          [reg nb] [reg src-x] [reg U] [reg src-y] [reg buf*]))
+;;
+(define (S-compute$-sub-F-norm up-sign down-sign res-x norm
+                               l-s s-f-line s-h-line
+                               nb src-x U src-y buf*)
+  (load int () mask ([reg nb] [const (offset-of neighbor mask)]))
+  (op pointer-move () (r) ([reg res-x]))
+  (loop () (s [const 0] [reg l-s])
+    (load qcd-fermion () f ([reg src-x]))
+    (op pointer-add () (src-x) ([reg src-x] [const (size-of Fermion)]))
+    (store qcd-fermion () ([reg r]) [reg f])
+    (op pointer-add () (r) ([reg r] [const (size-of Fermion)])))
+  (repeat ((d [const 0] [const *dim*]))
+    ;; continue with up
+    (macro F-sub-up [const up-sign]
+                    [const d] [reg mask] [reg res-x]
+                    [reg l-s] [reg s-f-line] [reg s-h-line]
+                    [reg nb] [reg U] [reg src-y] [reg buf*])
+    ;; continue with down               
+    (macro F-sub-down [const down-sign]
+                      [const d] [reg mask] [reg res-x]
+                      [reg l-s] [reg s-f-line] [reg s-h-line]
+                      [reg nb] [reg U] [reg src-y] [reg buf*]))
+  (loop () (s [const 0] [reg l-s])
+    (load qcd-fermion () f-n ([reg res-x]))
+    (op pointer-add () (res-x) ([reg res-x] [const (size-of Fermion)]))
+    (op qcd-fnorm-add () (norm) ([reg norm] [reg f-n])))
+  (op pointer-add () (nb) ([reg nb] [const (size-of neighbor)])))
+
+(define (S-compute-sub-F*-norm res-x norm l-s s-f-line s-h-line
+                               nb src-x U src-y buf*)
+  (macro S-compute$-sub-F-norm [const 'plus] [const 'minus]
+                               [reg res-x] [reg norm]
+                               [reg l-s] [reg s-f-line] [reg s-h-line]
+                               [reg nb] [reg src-x] [reg U] [reg src-y]
+                               [reg buf*]))

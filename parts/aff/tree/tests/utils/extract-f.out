@@ -1,0 +1,54 @@
+/:  void[0]
+  void[0]         int2
+  void[0]         int1
+  void[0]         aa1
+/int2:  void[0]
+  int[3]          c1
+  int[3]          b1
+/int2/c1:  int[3]
+        0           7
+        1          11
+        2          13
+/int2/b1:  int[3]
+        0           2
+        1           3
+        2           5
+/int1:  void[0]
+  int[3]          b1
+  int[3]          c1
+/int1/b1:  int[3]
+        0           2
+        1           3
+        2           5
+/int1/c1:  int[3]
+        0           7
+        1          11
+        2          13
+/aa1:  void[0]
+  char[10]        c1
+  char[10]        b1
+/aa1/c1:  char[10]
+    "MIT RULES!"
+/aa1/b1:  char[10]
+    "LHPC-AFF !"
+/:  void[0]
+  void[0]         a3
+  void[0]         int3
+/a3:  void[0]
+  char[10]        b1
+  char[10]        c1
+/a3/b1:  char[10]
+    "LHPC-AFF !"
+/a3/c1:  char[10]
+    "MIT RULES!"
+/int3:  void[0]
+  int[3]          b1
+  int[3]          c1
+/int3/b1:  int[3]
+        0           2
+        1           3
+        2           5
+/int3/c1:  int[3]
+        0           7
+        1          11
+        2          13

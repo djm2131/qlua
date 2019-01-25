@@ -1,0 +1,27 @@
+;; zero in QCD
+
+(procedure zero-U ([stem "zU"] count-flops)
+                  ([r     pointer   "r"     "void *"])
+   (op qcd-zerou () (u) ())
+   (store qcd-su-n () ([reg r]) [reg u]))
+
+(procedure zero-F ([stem "zF"] count-flops)
+                  ([r     pointer   "r"     "void *"])
+   (op qcd-zerof () (u) ())
+   (store qcd-fermion () ([reg r]) [reg u]))
+
+(procedure zero-H ([stem "zH"] count-flops)
+                  ([r     pointer   "r"     "void *"])
+   (op qcd-zeroh () (u) ())
+   (store qcd-projected-fermion () ([reg r]) [reg u]))
+
+(procedure zero-S ([stem "zS"] count-flops)
+                  ([r     pointer   "r"     "void *"])
+   (op qcd-zeros () (u) ())
+   (store qcd-staggered-fermion () ([reg r]) [reg u]))
+
+(procedure zero-C ([stem "zC"] count-flops)
+                  ([r     pointer   "r"     "void *"])
+   (op complex-zero () (u) ())
+   (store COMPLEX () ([reg r]) [reg u]))
+

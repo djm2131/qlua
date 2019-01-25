@@ -1,0 +1,12 @@
+(procedure test-op ([stem "xx"])
+       ([res pointer "x" "double *"]
+        [cl pointer "x" "struct Clover *"]
+        [a int "a" "int"]
+        [b int "b" "int"]
+        [c int "c" "int"]
+        [d int "d" "int"])
+
+   (op qcd-clover-lo-offset () (off) ([reg a] [reg b] [reg c] [reg d]))
+   (load REAL () xxx ([reg cl] [reg off]))
+   (op qcd-clover-hi-double-offset () (x) ([reg a] [reg b] [reg c] [reg d]))
+   (store double () ([reg res] [reg x]) [reg xxx]))

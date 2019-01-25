@@ -1,0 +1,26 @@
+;; Update x and p in the CG:
+;;  x <- x + alpha p
+;;  p <- r + beta p
+;;
+(include "types.qa0")
+
+(procedure cg-x&p ([stem "cg_xp"]
+                    prec&color
+                    count-flops)
+           ([x         pointer "x"         "struct FermionX *"      ]
+            [p         pointer "p"         "struct FermionX *"      ]
+            [size      int     "size"      "size_t"                 ]
+            [alpha     double  "alpha"     "double"                 ]
+            [beta      double  "beta"      "double"                 ]
+            [r         pointer "r"         "const struct FermionX *"])
+   (loop () (i [const 0] [reg size])
+     (load qcd-fermion () f-x ([reg x]))
+     (load qcd-fermion () f-p ([reg p]))
+     (load qcd-fermion () f-r ([reg r]))
+     (op qcd-maddf () (g-x) ([reg f-x] [reg alpha] [reg f-p]))
+     (op qcd-maddf () (g-p) ([reg f-r] [reg beta] [reg f-p]))
+     (store qcd-fermion () ([reg x]) [reg g-x])
+     (store qcd-fermion () ([reg p]) [reg g-p])
+     (op pointer-add () (x) ([reg x] [const (size-of Fermion)]))
+     (op pointer-add () (p) ([reg p] [const (size-of Fermion)]))
+     (op pointer-add () (r) ([reg r] [const (size-of Fermion)]))))

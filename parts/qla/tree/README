@@ -1,0 +1,113 @@
+SciDAC QLA C interface -- Level 1 linear algebra routines
+
+This package uses the standard GNU configuration script.  See the file
+INSTALL for datails on compiling and installing.  It is recommended that
+QLA be compiled with a C99 compliant compiler (or at least one that
+understands the restrict keyword).  Check your compiler documentation to
+find the appropriate option (for gcc try -std=c99 or for xlc try
+-qlanglvl=stdc99).
+
+**** BG/L config notes ****
+
+The recommended configure line for BG/L is
+
+./configure \
+  --prefix=$INSTALL_DIR \
+  --enable-nc=3 \
+  --enable-440d \
+  --enable-xlc \
+  --enable-temp-precision=D \
+  --enable-backend-test-cmd="$RUN_COMMAND" \
+  --host=blrts --build=none \
+  CC=blrts_c99 \
+  CFLAGS="-O3 -qarch=440d" \
+  TEST_CFLAGS="-O2"
+
+Where $INSTALL_DIR is the directory you want it installed in and
+$RUN_COMMAND is a command that can be used to run an executable on the
+backend.  For cobalt this can simply be "cqsub -t 5 -n 1 -c 1 -m co".
+If you can run mpirun directly to submit jobs on the backend then
+something like "mpirun -np 1" might work depending on the setup.
+Otherwise for loadleveler you need to make a script like the one
+below, make sure it is executable and in your path and then pass that
+as the run command.
+
+#!/bin/sh
+llsubmit - <<EOF
+# @ job_type = parallel
+# @ executable = /bgl/BlueLight/ppcfloor/bglsys/bin/mpirun
+# @ arguments = -np 1 -connect MESH -mode CO -cwd `pwd` -exe $1
+# @ wall_clock_limit = 10
+# @ queue
+EOF
+
+
+If all goes well then you can do the usual "make && make install" then
+"cd test" and do "make check".  This should start the tests running on
+the backend.  When all the tests are finished you can do "make check-TESTS"
+from the same directory (test) and that will give a summary of the tests.
+You can also look at the various */*.result files directly.
+
+
+**** below are the original notes ****
+
+Some configuration options to be aware of are:
+ --enable-sse	uses optimized SSE routines for some functions (single)
+ --enable-sse2	uses optimized SSE2 routines for some functions (double)
+ --enable-sse3	uses optimized SSE3 routines for some functions
+ --enable-440	uses optimized 440 routines for some functions (QCDOC/BGL)
+ --enable-nc=[2,3,n]	build only the 2, 3, or arbitrary (n) color libraries
+			leave this out to build all libraries
+
+The sse options are cumulative so that sse2 also includes sse and sse3
+includes sse and sse2.
+
+The sse (not sse2) code now works with both gcc and icc.  It will just
+use the same compiler as used for the rest of the code.  You may have
+to give it the appropriate commands (like -msse or -msse2) for it to
+compile the sse code.
+
+The sse2 code still requires gcc.  If the main compiler is gcc then it
+will use that otherwise it will default to just using the 'gcc'
+command found in the path.  You can specify the correct location of
+the needed gcc compiler by setting the GNUCC environment variable.
+This will only be used for the sse2 code.  Note however that icc can
+emulate gcc in some cases and may actually be able to compile this
+code fine.
+
+There are now variables TEST_CC and TEST_CFLAGS which are used only
+for compiling the test suite.  Since the test sources are very large
+you may want to disable optimizations here to reduce compile time.
+
+An example configure command is:
+
+configure \
+  --prefix=$HOME/scidac/install/qla \
+  --enable-nc=3 \
+  --enable-sse3 \
+  CC=icc \
+  CFLAGS="-c99 -O2 -xN -fno-alias -unroll -fp-model fast" \
+  TEST_CFLAGS="-c99 -O0 -xN" \
+  LDFLAGS="-static"
+
+Documentation is included in the doc directory.  This is not included in
+the installation.  See the README file in the doc directory for details.
+
+Contents of directories in src
+
+  doc		Documentation - Postscript and HTML
+  examples	A simple benchmark routine for a few functions. (make check)
+  include	Predefined headers and generated headers
+  lib/cmath	Complex arithmetic sources
+  lib/perl	Perl script for building the libraries
+  lib/random	Random number utilities
+  lib/c99	c99 functions for non-c99 compliant compilers.
+  lib/optimized	Various optimized routines for different platforms.
+  lib/qla_*	Contains makefile for each library.
+  tests		Test suite.  This is run with 'make check'.
+
+
+Bugs and suggestions:
+James C. Osborn
+Boston University
+josborn at physics.bu.edu

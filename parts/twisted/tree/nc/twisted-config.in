@@ -1,0 +1,52 @@
+#!/bin/sh -f
+
+version='TWISTED |:Version:| (Nc=|:Nc:|)'
+
+cc="@cc@"
+cflags="-I@incdir@ @qmp_cflags@ @cflags@"
+copts="@copts@"
+ld="@ld@"
+ldflags="-L@libdir@ @qmp_ldflags@ @ldflags@"
+libs="-lqop-twisted|:Nc:| @qmp_libs@ @libs@"
+qdp="@qdp@"
+qmp="@qmp@"
+gsl="@gsl@"
+target="@target@"
+
+# usage status
+usage() {
+  cat << EOF
+    usage: twisted-config option
+    options:
+       --version
+       --cc
+       --cflags
+       --copts
+       --ld
+       --ldflags
+       --libs
+       --qdp
+       --qmp
+       --gsl
+       --target
+       --Nc
+EOF
+}
+
+
+case "$1" in
+   --version)  echo "$version" ;;
+   --cc)       echo "$cc" ;;
+   --cflags)   echo "$cflags" ;;
+   --copts)    echo "$copts" ;;
+   --ld)       echo "$ld" ;;
+   --ldflags)  echo "$ldflags" ;;
+   --libs)     echo "$libs" ;;
+   --qdp)      echo "$qdp" ;;
+   --qmp)      echo "$qmp" ;;
+   --gsl)      echo "$gsl" ;;
+   --target)   echo "$target" ;;
+   --Nc)       echo "|:Nc:|" ;;
+   *) usage 1 1>&2 ;;
+esac
+exit 0

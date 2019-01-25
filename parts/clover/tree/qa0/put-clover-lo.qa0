@@ -1,0 +1,33 @@
+(include "types.qa0")
+
+;; r memory order:
+;;  [0][0][0][0].re
+;;  [0][0][0][0].im
+;;  [0][0][0][1].re
+;;  [0][0][0][1].im
+;;  ...
+;;  [0][0][nC-1][nP-1].im
+;;  [0][1][0][0].re
+;;  ...
+;;  [nC-1][nP-1][nC-1][nP-1].im
+;;
+(procedure put-clover-lo ([stem "put_clover_lo"]
+                      prec&color)
+           ([C         pointer "C"         "struct CloverX *"  ]
+            [index     int     "p"         "size_t"            ]
+            [data      pointer "r"         "const double *"    ])
+
+   (op int-mul () (x) ([reg index] [const (size-of Clover)]))
+   (op pointer-add () (ptr) ([reg C] [reg x]))
+   (loop () (a [const 0] [const *colors*])
+     (loop () (i [const 0] [const *projected-fermion-dim*])
+       (loop () (b [const 0] [const *colors*])
+         (loop () (j [const 0] [const *projected-fermion-dim*])
+           (load double () v-re ([reg data]))
+           (load double () v-im ([reg data] [const (size-of double)]))
+           (op pointer-add () (data) ([reg data]
+                                      [const (* 2 (size-of double))]))
+           (op qcd-clover-lo-offset () (aibj) ([reg a] [reg i] [reg b] [reg j]))
+           (op pointer-add () (p) ([reg ptr] [reg aibj]))
+           (op complex () (v) ([reg v-re] [reg v-im]))
+           (store COMPLEX () ([reg p]) [reg v]))))))

@@ -1,0 +1,158 @@
+---- printf() and eprintf() available
+
+function printf(fmt, ...)
+  return io.stdout:write(string.format(fmt, ...))
+end
+
+function eprintf(fmt, ...)
+  return io.stderr:write(string.format(fmt, ...))
+end
+
+---- iterators
+-- interval [lo, hi]
+function interval(lo, hi)
+  local function f(_, x)
+    if x < hi then
+      return x + 1
+    else
+      return nil
+    end
+  end
+  return f, nil, lo - 1
+end
+
+-- exclude a value from an iterator
+function skip(excl, ...)
+  local f,fs,k = ...
+  local function g(gs, x)
+    local y = gs[1](gs[2], x)
+    if y == excl then
+      return g(gs, y)
+    else
+      return y
+    end
+  end
+  return g, {f, fs}, k
+end
+
+-- access an element of parsed XML
+function xml.get(x, n, ...)
+  if n == nil then
+     return x
+  end
+  if type(n) == "number" then
+     return x[n]
+  else
+    for i = 1, #x do
+       local y = x[i]
+       if type(y) == "table" and y["$tag"] == n then
+         return xml.get(y, ...)
+       end
+    end
+    return nil    
+  end
+end
+
+-- create an arithmetic sequence
+function range(lo, hi, step)
+  if nil == step  then step = 1 end
+  local res = {}
+  while (lo < hi) == (0 < step) do -- sic! logical XOR
+    table.insert(res, lo)
+    lo = lo + step
+  end
+  return res
+end
+
+
+require 'verbose'
+
+
+-------------------------------------------------------------------------------
+-- FILE MANAGEMENT
+-------------------------------------------------------------------------------
+function basename(str)
+--  printf("%s\n", str:gsub("/+$", ""))
+  return str:gsub("/+$", ""):gsub("(.*)/([^/]+)", "%2")
+end                 
+function dirname(str)
+  local s = str:gsub("/+$", "")
+  if s:match(".-/.-") then return s:gsub("/([^/]+)$", "")
+  else return '.' end
+end
+
+
+-------------------------------------------------------------------------------
+-- MISCELLANEOUS FUNCTIONS
+-------------------------------------------------------------------------------
+
+-- complete "spatial" coord to full
+function space2full(c, t_axis, c_t)
+  local cfull = {}
+  if nil == c_t then cfull[1+t_axis] = 0
+  else cfull[1+t_axis] = c_t end
+  for d = 0, #c-1 do -- dimension of space-only is #c
+    if d < t_axis then cfull[1+d] = c[1+d]
+    else cfull[2+d] = c[1+d] end
+  end
+  return cfull
+end
+-- extract "spatial" coords from full
+function full2space(cfull, t_axis)
+  local cspace = {}
+  for d = 0, #cfull - 2 do  -- dimension of space-only is #cfull-1
+    if d < t_axis then cspace[1+d] = cfull[1+d]
+    else cspace[1+d] = cfull[2+d] end
+  end
+  return cspace
+end
+
+-- find element in a table by value
+function table_index(clist, cx)
+  for i, c in pairs(clist) do
+    if cx == c then
+      return i
+    end
+  end
+  return nil
+end
+--function table_copy(
+function copy_table(tab, level)
+  -- deep-copy a table down to `level' 
+  -- no non-table elements are duplicated (only copied by reference)
+  -- examples : all the following will return a new table (a,b,c,d are tables)
+  --    copy_table({a,b,{c,d}}, 0) will return {a,b,{c,d}}
+  --    copy_table({a,b,{c,d}}, 1) will return {a1,b1,{c,d}} where a1,b1 are duplicates of a,b
+  --    copy_table({a,b,{c,d}}, 2) will return {a1,b1,{c1,d1}} where a1,b1,c1,d1 are duplicates of a,b,c,d
+  --    copy_table({a,b,{c,d}}) will complete deep-copy of the argument table
+  local res = {}
+  for k,v in pairs(tab) do
+    if 'table' == type(v) then
+      if nil == level then res[k] = copy_table(v) 
+      elseif (0 < level) then res[k] = copy_table(v, level - 1)
+      else res[k] = v end
+    else res[k] = v end
+  end
+  return res
+end
+table_copy = copy_table
+
+function table_append(res, x) res[1+#res] = x end
+-- extend table `res' with values in table `t', ignoring keys
+function table_extend(res, t)
+  for ia, a in pairs(t) do res[1+#res] = a end
+end
+-- join tables into a single list of values, ignoring keys
+function table_join(...)
+  local res = {}
+  for k, t in pairs({...}) do table_extend(res, t) end
+  return res
+end
+
+-- compute average and variance of a real field
+function calc_avg_var(f)
+  local L   = f.lattice
+  local avg = f:sum() / L:volume()
+  local var = (f - avg):norm2() / L:volume()
+  return avg, var
+end

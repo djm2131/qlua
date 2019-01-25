@@ -1,0 +1,47 @@
+;; Check bgl/xlc intrinsics
+
+(procedure sub ([stem "sub"] count-flops)
+               ([r     pointer   "r"     "void *"]
+	        [a     pointer   "a"     "void *"]
+                [b     pointer   "b"     "void *"])
+   (load qcd-fermion () v-a ([reg a]))
+   (load qcd-fermion () v-b ([reg b]))
+   (op qcd-subf () (v-r) ([reg v-a] [reg v-b]))
+   (store qcd-fermion () ([reg r]) [reg v-r]))
+
+(procedure madd ([stem "madd"] count-flops)
+               ([r     pointer   "r"     "void *"]
+	        [a     pointer   "a"     "void *"]
+		[s     double    "s"     "double"]
+                [b     pointer   "b"     "void *"])
+   (load qcd-fermion () v-a ([reg a]))
+   (load qcd-fermion () v-b ([reg b]))
+   (op qcd-maddf () (v-r) ([reg v-a] [reg s] [reg v-b]))
+   (store qcd-fermion () ([reg r]) [reg v-r]))
+
+(procedure msub ([stem "msub"] count-flops)
+               ([r     pointer   "r"     "void *"]
+	        [a     pointer   "a"     "void *"]
+		[s     double    "s"     "double"]
+                [b     pointer   "b"     "void *"])
+   (load qcd-fermion () v-a ([reg a]))
+   (load qcd-fermion () v-b ([reg b]))
+   (op qcd-msubf () (v-r) ([reg v-a] [reg s] [reg v-b]))
+   (store qcd-fermion () ([reg r]) [reg v-r]))
+
+(procedure scale ([stem "scale"] count-flops)
+                 ([r     pointer   "r"     "void *"]
+	          [a     double    "a"     "double"]
+                  [b     pointer   "b"     "void *"])
+   (load qcd-fermion () v ([reg b]))
+   (op qcd-scalef () (v-r) ([reg a] [reg v]))
+   (store qcd-fermion () ([reg r]) [reg v-r]))
+
+(procedure mul ([stem "mul"] count-flops)
+               ([r     pointer   "r"     "void *"]
+	        [a     pointer   "a"     "void *"]
+                [b     pointer   "b"     "void *"])
+   (load qcd-fermion () v-a ([reg a]))
+   (load qcd-su-n () U ([reg b]))
+   (op qcd-mulf () (v-r) ([reg U] [reg v-a]))
+   (store qcd-fermion () ([reg r]) [reg v-r]))

@@ -1,0 +1,3 @@
+This project contains a library for accessing and manipulation of analysis files
+in new binary format. The goal is to make it possible to work efficiently with
+large amount of data.

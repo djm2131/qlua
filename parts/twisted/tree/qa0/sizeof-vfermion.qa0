@@ -1,0 +1,9 @@
+(include "types.qa0")
+
+(procedure size-of-vfermion ([stem "sizeof_vfermion"]
+                             [return total int "size_t"]
+                             prec&color)
+           ([volume int "volume" "size_t"]
+            [count  int "count"  "size_t"])
+   (op int-mul () (v*c)   ([reg volume] [reg count]))
+   (op int-mul () (total) ([reg v*c] [const (size-of Fermion)])))

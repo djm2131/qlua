@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ $# -ne 1 ] ; then
+    echo "Usage: package-dists name" 1>&2
+    exit 1
+fi
+name="$1"
+
+for nc in {2,3} ; do
+  echo packaging Nc=$nc
+  git archive --format=tar --prefix=clover-${name}-nc$nc/ HEAD | (tar -xf -; cd clover-${name}-nc$nc; utils/prebuild $nc)
+  rm -fr clover-${name}-nc$nc
+done

@@ -1,0 +1,19 @@
+#!/bin/sh -f
+
+if [ $# -ne 1 ] ; then
+   echo "Usage: prebuild Nc" 1>&2
+   exit 1
+fi
+Nc="$1"
+
+#targets="bgq/xlc c99-32 c99-64 cee-32 cee-64"
+targets="bgq/xlc cee-64"
+
+[ -d doc ] || mkdir doc
+utils/setup-nc $Nc
+set -e
+make NC="$Nc" -C noweb
+make NC="$Nc" -C noweb clean
+make NC="$Nc" -C qa0 TARGETS="$targets"
+version=`basename $PWD`
+tar -cf - -C .. $version | bzip2 -9 > ../$version.tar.bz2

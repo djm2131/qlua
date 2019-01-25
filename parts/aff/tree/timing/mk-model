@@ -1,0 +1,40 @@
+#!/bin/sh -f
+
+if [ $# -ne 1 ]; then
+  echo "usage: mk-model sample.aff"
+  exit 1
+fi
+
+sample=$1
+
+do_links() {
+  for l1 in '' x y z t X Y Z T; do
+    for l2 in '' x y z t X Y Z T; do
+      if [ "$l1" != "$l2" ]; then
+        for l3 in no-l3 ; do
+          if [ "$l3" != "$l2" ]; then
+            echo /$1/link-$l1$l2$l3 $sample /
+          fi
+        done
+      fi
+    done
+  done
+}
+
+do_momentum() {
+  qv=`printf qx%d_qy%d_qz%d $1 $2 $3`
+  for P in P Pbar; do
+    do_links $P/$qv 
+  done
+}
+
+for qx in `seq -3 3`; do
+  for qy in `seq -3 3`; do
+    for qz in `seq -3 3`; do
+      q2=$(($qx * $qx + $qy * $qy + $qz * $qz))
+      if [ $q2 -lt 11 ]; then
+        do_momentum $qx $qy $qz
+      fi
+    done
+  done
+done

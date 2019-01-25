@@ -1,0 +1,69 @@
+require "stdlib"
+require "gauge"
+require "hex-smear"
+
+-- completely meaningless values of parameters just to make life interesting
+
+Lx = 6
+Lt = 12
+seed        = 1984
+m_q         = -1.03
+c_sw        = 1.0
+max_cg      = 50000
+
+L = qcd.lattice {Lx, Lx, Lx, Lt}
+
+-- get a unique number of each lattice site
+function rnd_init(x)
+  local l_s = 1
+  l_id = L:Int(0)
+  for d = 0, #L - 1 do
+    l_id = l_id + l_s * L:pcoord(d)
+    l_s = l_s * L[d]
+  end
+  return L:RandomState(x, l_id)
+end
+
+function check_solver(x, b, name, s)
+   printf("----- checking %s: %s\n", name, tostring(s))
+   local y = s(b)
+   printf("|b| = %15.7e\n", b:norm2())
+   printf("|x| = %15.7e\n", x:norm2())
+   printf("|y| = %15.7e\n", y:norm2())
+   printf("residue: %15.7e\n", (x - y):norm2())
+   printf("----- check done\n\n")
+end
+
+S = rnd_init(seed)
+
+U = {}
+for i = 1, #L do
+   U[i] = toSUn(S:gaussian_ColorMatrix() * 10.4)
+end
+
+U = bmw_hex(U, 2)
+
+CL = qcd.Clover(U, 1/(8 + 2 * m_q), c_sw, {1, 1, 1, -1})
+printf("CLOVER  %s\n", tostring(CL))
+
+DF = CL:eig_deflator(50, 10, 1e-7, 200)
+printf("DEFLATOR %s\n", tostring(DF))
+
+F = S:gaussian_DiracFermion()
+G = CL:D(F)
+check_solver(F, G, "standard solver", CL:solver(1e-12, max_cg))
+check_solver(F, G, "mixed solver",  CL:mixed_solver(1e-10,max_cg,1e-12,max_cg))
+eigCG = DF:mixed_solver(1e-10, max_cg, 1e-12, max_cg)
+check_solver(F, G, "eigCG solver",  eigCG)
+
+for i = 1, 20 do
+   F = S:gaussian_DiracFermion()
+   G = CL:D(F)
+   printf("\neigCG %5d :", i)
+   eigCG(G, false, true)
+   -- check_solver(F, G, string.format("eigCG[%d]", i), eigCG)
+end
+
+
+printf("DONE\n")
+

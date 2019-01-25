@@ -1,0 +1,19 @@
+PREFIX="$WKDIR/insert-f."
+
+rm -f ${PREFIX}xx2.aff
+$RUN insert -o ${PREFIX}xx2.aff -f - >>$LOG 2>&1 <<EOF ||exit 1
+aa ${TEST_DIR}/xx1.aff a1
+int2 ${TEST_DIR}/xx1.aff int1
+xx ${TEST_DIR}/xx.aff /
+yy ${TEST_DIR}/yy.aff /
+/ ${TEST_DIR}/xx1.aff /
+EOF
+
+$RUN check ${PREFIX}xx2.aff >>$LOG 2>&1 ||exit 1
+
+$RUN ls -lR ${PREFIX}xx2.aff >${PREFIX}test.out 2>>$LOG ||exit 1
+
+$DIFF ${PREFIX}test.out ${TEST_DIR}/insert-f.out >>$LOG 2>&1 ||exit 1
+
+[[ $SAVE_TEST_OUT == "yes" ]] ||\
+	rm -f ${PREFIX}xx2.aff ${PREFIX}test.out

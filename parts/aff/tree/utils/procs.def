@@ -1,0 +1,19 @@
+PROC("help",     x_help,    h_help,    "print this help")
+PROC("version",  x_version, h_version, "print the version of LHPC AFF")
+PROC("check",    x_check,   h_check,   "check aff files integrity")
+PROC("ls",       x_ls,      h_ls,      "list the content of the AFF file")
+PROC("cat",      x_cat,     h_cat,     "print one or more sections")
+PROC("import",	 x_import,  h_import,  "import data from standard input")
+PROC("insert",   x_insert,  h_insert,  "join several files together; may be used as insert tool")
+PROC("join",     x_insert,  h_join,    "synonym to 'insert'")
+PROC("extract",  x_extract, h_extract, "extract one section from the AFF file")
+PROC("cp",       x_copy,    h_copy,    "copy key from one AFF file to another")
+PROC("diff",	 x_diff,    h_diff,    "compare keys in two files")
+
+/*
+PROC("mv",     x_move,    h_move,    "rename key inside an AFF file")
+PROC("rm",     x_remove,  h_remove,  "remove a key and all its descendants")
+PROC("xml",      x_xml,     h_xml,     "convert AFF to XML")
+PROC("spectrum", x_2point,  h_2point,  "convert spectrum data into AFF")
+PROC("3point",   x_3point,  h_3point,  "convert 3-point data into AFF")
+*/

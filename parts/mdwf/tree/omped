@@ -1,0 +1,99 @@
+#### F-pieces may need a different approach to src-x
+
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+
+or
+
+#ifdef _OPENMP
+#pragma omp parallel for reduction(+:flops)
+#endif
+
+
+int loop_idx;
+int loop_limit = state->threads;
+
+for (loop_idx = 0; loop_idx < loop_limit; loop_idx++) {
+    int size = e_size;
+    int low_limit = (loop_idx * size) / loop_limit;
+    int high_limit = ((loop_idx + 1) * size) / loop_limit;
+    int loop_size = high_limit - low_limit;
+    /* convert 0, e_size to low_limit, loop_size */
+    ...
+}
+
+-- mixed precision
+PU    f_d_peq_f
+PU    f_f_eq_dmd_norm2
+PU    g_f_eq_d
+
+-- two precision variants
+PU    proj_g minus    --> up_project_n     -> boundary
+PU    proj_g plus     --> down_project_n   -> boundary
+PU    proj_Ucg minus  --> up_project_x     -> boundary
+PU    proj_Ucg plus   --> down_project_x   -> boundary
+
+PU      do_1mBA1F           -- only in params->df(op) and params->qd(op)
+PU      do_AxpBxFx          -- only in params->df(op) and params->qd(op)
+PU      do_A_conj           -- only in params->df(op) and params->qd(op)
+PU      do_A1xBxFx          -- only in params->df(op) and params->qd(op)
+PU      do_A1xBx            -- only in params->df(op) and params->qd(op)
+PU      do_A_conj_inverse   -- only in params->df(op) and params->qd(op)
+PU      do_A_inverse        -- only in params->df(op) and params->qd(op)
+PU      do_ApF              -- only in params->df(op) and params->qd(op)
+PU      do_A                -- only in params->df(op) and params->qd(op)
+PU      do_BA1F             -- only in params->df(op) and params->qd(op)
+PU      do_BA1              -- only in params->df(op) and params->qd(op)
+PU      doc_1mBA1F          -- only in params->df(op) and params->qd(op)
+PU      doc_AxpBxFx         -- only in params->df(op) and params->qd(op)
+PU      doc_A_conj          -- only in params->df(op) and params->qd(op)
+PU      doc_A1xBxFx         -- only in params->df(op) and params->qd(op)
+PU      doc_A1xBx           -- only in params->df(op) and params->qd(op)
+PU      doc_A_conj_inverse  -- only in params->df(op) and params->qd(op)
+PU      doc_A_inverse       -- only in params->df(op) and params->qd(op)
+PU      doc_ApF             -- only in params->df(op) and params->qd(op)
+PU      doc_A               -- only in params->df(op) and params->qd(op)
+PU      doc_BA1F            -- only in params->df(op) and params->qd(op)
+PU      doc_BA1             -- only in params->df(op) and params->qd(op)
+
+PU      blas2fermion
+PU      fermion2blas
+PU      cg_xp
+PU      scg_madd
+PU      scg_xp
+PU      f_add2
+PU      f_add2x -- not used
+PU      f_cadd2 -- not used
+PU      f_add3
+PU      f_copy
+PU      f_rmul1
+PU      f_zero
+PU      do_1mFx
+PU      do_1mF
+PU      do_F_conj
+PU      do_F
+
+PU      fv_copy
+PU      fv_get
+PU      fv_put
+PU      fv_zero
+
+PU      vf_copy
+PU      vf_dot_mz
+PU      vf_dot_vz
+PU      vf_get
+PU      vf_put
+PU      do_vfH_dot_f
+PU      do_vfH_dot_vf
+
+PU      do_1mBA1F_norm      -- only in params->df(op) and params->qd(op)
+PU      do_ApF_norm         -- only in params->df(op) and params->qd(op)
+PU      doc_1mBA1F_norm     -- only in params->df(op) and params->qd(op)
+PU      doc_ApF_norm        -- only in params->df(op) and params->qd(op)
+
+PU      do_1mFx_norm
+PU      f_add2_norm
+PU      f_diff_norm
+PU      f_norm
+PU      f_dot

@@ -1,0 +1,125 @@
+#!/bin/sh
+
+echo "************************************************************************"
+echo "**********************  Summary of test results  ***********************"
+echo "************************************************************************"
+
+exists() {
+  status=0
+  for f in $*; do
+    if [ ! -f $f ]; then
+      echo "Result file $f not found."
+      status=1
+    fi
+  done
+  return $status
+}
+
+warn_rest() {
+  dir="$1"
+  shift
+  for f in `\ls -1 $dir/*.result 2>/dev/null`; do
+    if ! echo "$*" |grep -q "$f"; then
+      echo WARNING: not summarized: $f
+    fi
+  done
+}
+
+intfiles="int/test_int_sng.result int/test_int_idx.result"
+if exists $intfiles; then
+  perl $srcdir/checkcomplete.pl 0 ../include/qla_int.h $intfiles
+fi
+
+warn_rest int $intfiles
+
+
+mfiles="scalar/test_macros_[fdq].result"
+if exists $mfiles; then
+  perl $srcdir/checkcomplete.pl 0 $srcdir/../include/qla_complex.h $mfiles
+fi
+
+sfiles=""
+for p in f d q df dq; do
+  files="scalar/test_scalar_${p}_sng.result scalar/test_scalar_${p}_idx.result"
+  if exists $files; then
+    pc=`echo $p |tr 'a-z' 'A-Z'`
+    if [ $pc = DF -o $pc = DQ ]; then pc="0"; fi
+    perl $srcdir/checkcomplete.pl $pc ../include/qla_${p}.h $files
+  fi
+  sfiles="$sfiles $files"
+done
+
+warn_rest scalar $mfiles $sfiles
+
+
+t1files=""
+for p in f d q df dq; do
+  hdr="../include/qla_${p}1.h"
+  if [ -f $hdr ]; then
+    files="tensor1/test_tensor_${p}_sng.result tensor1/test_tensor_${p}_idx.result"
+    if exists $files; then
+      pc=`echo $p |tr 'a-z' 'A-Z'`
+      if [ $pc = DF -o $pc = DQ ]; then pc=""; fi
+      perl $srcdir/checkcomplete.pl ${pc}1 $hdr $files
+    fi
+    t1files="$t1files $files"
+  fi
+done
+
+warn_rest tensor1 $t1files
+
+
+t2files=""
+for p in f d q df dq; do
+  hdr="../include/qla_${p}2.h"
+  if [ -f $hdr ]; then
+    files="tensor2/test_tensor_${p}_sng.result tensor2/test_tensor_${p}_idx.result"
+    if exists $files; then
+      pc=`echo $p |tr 'a-z' 'A-Z'`
+      if [ $pc = DF -o $pc = DQ ]; then pc=""; fi
+      perl $srcdir/checkcomplete.pl ${pc}2 $hdr $files
+    fi
+    t2files="$t2files $files"
+  fi
+done
+
+warn_rest tensor2 $t2files
+
+
+t3files=""
+for p in f d q df dq; do
+  hdr="../include/qla_${p}3.h"
+  if [ -f $hdr ]; then
+    files="tensor3/test_tensor_${p}_sng.result tensor3/test_tensor_${p}_idx.result"
+    if exists $files; then
+      pc=`echo $p |tr 'a-z' 'A-Z'`
+      if [ $pc = DF -o $pc = DQ ]; then pc=""; fi
+      perl $srcdir/checkcomplete.pl ${pc}3 $hdr $files
+    fi
+    t3files="$t3files $files"
+  fi
+done
+
+warn_rest tensor3 $t3files
+
+
+tNfiles=""
+for p in f d q df dq; do
+  hdr="../include/qla_${p}n.h"
+  if [ -f $hdr ]; then
+    files="tensorN/test_tensor_${p}_sng.result tensorN/test_tensor_${p}_idx.result"
+    if exists $files; then
+      pc=`echo $p |tr 'a-z' 'A-Z'`
+      if [ $pc = DF -o $pc = DQ ]; then pc=""; fi
+      perl $srcdir/checkcomplete.pl ${pc}N $hdr $files
+    fi
+    tNfiles="$tNfiles $files"
+  fi
+done
+
+warn_rest tensorN $tNfiles
+
+
+echo "************************************************************************"
+echo "****************************  End of summary  **************************"
+echo "************************************************************************"

@@ -1,0 +1,21 @@
+(include "types.qa0")
+
+(procedure put-c-AB-Inverse ([stem "put_cABiTable"])
+           ([ab-i-table  pointer "iabtable"   "struct ABiTable *" ]
+            [index       int     "p"          "size_t"            ]
+            [a-val-re    double  "a_val_re"   "double"            ]
+            [a-val-im    double  "a_val_im"   "double"            ]
+            [b-val-re    double  "b_val_re"   "double"            ]
+            [b-val-im    double  "b_val_im"   "double"            ]
+            [c-val-re    double  "c_val_re"   "double"            ]
+            [c-val-im    double  "c_val_im"   "double"            ])
+   (op int-sub () (x) ([reg index] [const 1]))
+   (op int-mul () (y) ([reg x] [const (size-of c-abc)]))
+   (op int-add () (z) ([reg y] [const (offset-of c-AB-Inverse c-abc)]))
+   (op pointer-add () (p) ([reg ab-i-table] [reg z]))
+   (store double () ([reg p] [const (offset-of c-abc a-re)]) [reg a-val-re])
+   (store double () ([reg p] [const (offset-of c-abc a-im)]) [reg a-val-im])
+   (store double () ([reg p] [const (offset-of c-abc b-re)]) [reg b-val-re])
+   (store double () ([reg p] [const (offset-of c-abc b-im)]) [reg b-val-im])
+   (store double () ([reg p] [const (offset-of c-abc c-re)]) [reg c-val-re])
+   (store double () ([reg p] [const (offset-of c-abc c-im)]) [reg c-val-im]))

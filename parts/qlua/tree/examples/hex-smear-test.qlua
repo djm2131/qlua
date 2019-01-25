@@ -1,0 +1,87 @@
+-- compute HEX smearing of the gauge links according to Stefan's notes.
+require("stdlib")
+require("gauge")
+require("hex-smear")
+
+hex_steps = 10
+rnd_f = 0.5
+
+-- test geometry
+L = qcd.lattice{4,4,4,8}
+
+volume = 1
+for i = 0, #L - 1 do
+  volume = volume * L[i]
+end
+
+-------------- test routines
+function check_hex(name, L, U, g)
+  function check_plaquettes(name, U)
+    local function plaq(i, j)
+       local nc = U[1]:colors()
+       local P = plaquette(U, i, j):trace():real()
+       local px = P:sum() / volume
+       local z = (P - L:Real(px))
+       local dp = (z*z):sum() / volume
+       return px / nc , dp / (nc * nc)
+    end
+    printf("Plaquettes of %s\n", name)
+    for mu in interval(0, #L - 1) do
+      for nu in interval(mu+1, #L - 1) do
+        local p, dp = plaq(mu, nu)
+         printf("  [%d,%d] %30.20f %8.2e\n", mu, nu, p, math.sqrt(dp))
+      end
+    end
+    printf("  Q = %10.5f\n", naive_q(U):sum())
+    printf("\n")
+  end
+
+  local V = U
+  check_plaquettes("initial " .. name, U)
+  for i = 1, 10 do
+    V = bmw_hex(V,1)
+    check_plaquettes(string.format("V step %d", i), V)
+  end
+  V = gauge_transform_U(g, U)
+  check_plaquettes("transformed " .. name, U)
+  for i = 1, 10 do
+    V = bmw_hex(V,1)
+    check_plaquettes(string.format("trans V step %d", i), V)
+  end
+end
+
+do
+  local idx = L:Int(0)
+  for d = 0, #L - 1 do
+    idx = idx * L[d] + L:pcoord(d)
+  end
+  S = L:RandomState(1984, idx)
+end
+
+g = toSUn(S:gaussian_ColorMatrix())
+
+if false then
+  -- read a random gauge
+  file_name = "/Users/avp/Sandbox/USQCD/qio/data/random-gauge.nersc"
+  U, msg = qcd.nersc.read_gauge(file_name)
+  check_hex("std file", L, U, g)
+end
+
+if false then
+  U = { L:ColorMatrix(complex(1,0)),
+        L:ColorMatrix(complex(1,0)),
+        L:ColorMatrix(complex(1,0)),
+        L:ColorMatrix(complex(1,0))}
+  check_hex("unit", L, U, g)
+end
+
+if true then
+  U = { toSUn(rnd_f * S:gaussian_ColorMatrix()),
+        toSUn(rnd_f * S:gaussian_ColorMatrix()),
+        toSUn(rnd_f * S:gaussian_ColorMatrix()),
+        toSUn(rnd_f * S:gaussian_ColorMatrix()) }
+  check_hex(string.format("random(%g)", rnd_f), L, U, g)
+end
+
+printf("------ all done -----\n")
+

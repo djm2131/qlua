@@ -1,0 +1,22 @@
+#!/bin/sh
+
+extract_file() {
+  if [ -f "$1" ] ; then
+    incs=`grep '#include.*DEPS' $1 \
+          | sed -e 's/^.* "//;s/".*$//'`
+    o=`basename $1 .c`
+    for i in $incs ; do
+      if [ -f "sources/$i" ] ; then
+         echo "$o.o: sources/$i"
+      elif [ -f "extras/$i" ] ; then
+         echo "$o.o: extras/$i"
+      elif [ -f "hypre/$i" ] ; then
+         echo "$o.o: hypre/$i"
+      fi
+    done
+  fi
+}
+
+for f in sources/*.c extras/*.c hypre/*.c ; do
+  extract_file $f
+done | sort

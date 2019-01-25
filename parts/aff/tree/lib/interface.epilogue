@@ -1,0 +1,5 @@
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* !defined(_LHPC_AFF_H) */

@@ -1,0 +1,588 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+;; AB and c-AB accessors
+(define (get-ab-v&w v w v&w)
+  (load double () v ([reg v&w] [const (offset-of AB-Table v)]))
+  (load double () w ([reg v&w] [const (offset-of AB-Table w)]))
+  (op pointer-add () (v&w) ([reg v&w] [const (size-of AB-Table)])))
+(define (get-c-ab-v&w v w v&w)
+  (load double () v-re ([reg v&w] [const (offset-of c-AB-Table v-re)]))
+  (load double () v-im ([reg v&w] [const (offset-of c-AB-Table v-im)]))
+  (op complex () (v) ([reg v-re] [reg v-im]))
+  (load double () w-re ([reg v&w] [const (offset-of c-AB-Table w-re)]))
+  (load double () w-im ([reg v&w] [const (offset-of c-AB-Table w-im)]))
+  (op complex () (w) ([reg w-re] [reg w-im]))
+  (op pointer-add () (v&w) ([reg v&w] [const (size-of c-AB-Table)])))
+(define (get-c-ab-v&w-conj v w v&w)
+  (load double () v-re ([reg v&w] [const (offset-of c-AB-Table v-re)]))
+  (load double () v-im-x ([reg v&w] [const (offset-of c-AB-Table v-im)]))
+  (op double-neg () (v-im) ([reg v-im-x]))
+  (op complex () (v) ([reg v-re] [reg v-im]))
+  (load double () w-re ([reg v&w] [const (offset-of c-AB-Table w-re)]))
+  (load double () w-im-x ([reg v&w] [const (offset-of c-AB-Table w-im)]))
+  (op double-neg () (w-im) ([reg w-im-x]))
+  (op complex () (w) ([reg w-re] [reg w-im]))
+  (op pointer-add () (v&w) ([reg v&w] [const (size-of c-AB-Table)])))
+
+;;; 1/A and 1/A*
+(define  (get-abc-1/AB-table t table)
+  (op pointer-add () (t) ([reg table] [const (offset-of AB-Inverse abc)])))
+(define (get-backward-abc-1/AB-table r t)
+  (op pointer-add () (r) ([reg t] [const (- (size-of abc))])))
+(define (load-z-1/AB-table z table)
+  (load double () z ([reg table] [const (offset-of AB-Inverse z)])))
+(define (load-a-1/AB-table a t)
+  (load double () a ([reg t] [const (offset-of abc a)]))
+  (op pointer-add () (t) ([reg t] [const (size-of abc)])))
+(define (load-forward-bc-1/AB-table b c t)
+    (load double () b ([reg t] [const (offset-of abc b)]))
+    (load double () c ([reg t] [const (offset-of abc c)]))
+    (op pointer-add () (t) ([reg t] [const (size-of abc)])))
+(define (load-backward-bc-1/AB-table b c t)
+    (load double () b ([reg t] [const (offset-of abc b)]))
+    (load double () c ([reg t] [const (offset-of abc c)]))
+    (op pointer-add () (t) ([reg t] [const (- (size-of abc))])))
+
+(define  (get-c-abc-1/AB-table t table)
+  (op pointer-add () (t) ([reg table] [const (offset-of c-AB-Inverse c-abc)])))
+(define (get-c-backward-abc-1/AB-table r t)
+  (op pointer-add () (r) ([reg t] [const (- (size-of c-abc))])))
+(define (load-c-z-1/AB-table z table)
+  (load double () z-re ([reg table] [const (offset-of c-AB-Inverse z-re)]))
+  (load double () z-im ([reg table] [const (offset-of c-AB-Inverse z-im)]))
+  (op complex () (z) ([reg z-re] [reg z-im])))
+(define (load-c-a-1/AB-table a t)
+  (load double () a-re ([reg t] [const (offset-of c-abc a-re)]))
+  (load double () a-im ([reg t] [const (offset-of c-abc a-im)]))
+  (op complex () (a) ([reg a-re] [reg a-im]))
+  (op pointer-add () (t) ([reg t] [const (size-of c-abc)])))
+(define (load-c-forward-bc-1/AB-table b c t)
+    (load double () b-re ([reg t] [const (offset-of c-abc b-re)]))
+    (load double () b-im ([reg t] [const (offset-of c-abc b-im)]))
+    (op complex () (b) ([reg b-re] [reg b-im]))
+    (load double () c-re ([reg t] [const (offset-of c-abc c-re)]))
+    (load double () c-im ([reg t] [const (offset-of c-abc c-im)]))
+    (op complex () (c) ([reg c-re] [reg c-im]))
+    (op pointer-add () (t) ([reg t] [const (size-of c-abc)])))
+(define (load-c-backward-bc-1/AB-table b c t)
+    (load double () b-re ([reg t] [const (offset-of c-abc b-re)]))
+    (load double () b-im ([reg t] [const (offset-of c-abc b-im)]))
+    (op complex () (b) ([reg b-re] [reg b-im]))
+    (load double () c-re ([reg t] [const (offset-of c-abc c-re)]))
+    (load double () c-im ([reg t] [const (offset-of c-abc c-im)]))
+    (op complex () (c) ([reg c-re] [reg c-im]))
+    (op pointer-add () (t) ([reg t] [const (- (size-of c-abc))])))
+(define (load-c-z-1/AB-table-conj z table)
+  (load double () z-re ([reg table] [const (offset-of c-AB-Inverse z-re)]))
+  (load double () z-im ([reg table] [const (offset-of c-AB-Inverse z-im)]))
+  (op double-neg () (z-x) ([reg z-im]))
+  (op complex () (z) ([reg z-re] [reg z-x])))
+(define (load-c-a-1/AB-table-conj a t)
+  (load double () a-re ([reg t] [const (offset-of c-abc a-re)]))
+  (load double () a-im ([reg t] [const (offset-of c-abc a-im)]))
+  (op double-neg () (a-x) ([reg a-im]))
+  (op complex () (a) ([reg a-re] [reg a-x]))
+  (op pointer-add () (t) ([reg t] [const (size-of c-abc)])))
+(define (load-c-forward-bc-1/AB-table-conj b c t)
+    (load double () b-re ([reg t] [const (offset-of c-abc b-re)]))
+    (load double () b-im ([reg t] [const (offset-of c-abc b-im)]))
+  (op double-neg () (b-x) ([reg b-im]))
+    (op complex () (b) ([reg b-re] [reg b-x]))
+    (load double () c-re ([reg t] [const (offset-of c-abc c-re)]))
+    (load double () c-im ([reg t] [const (offset-of c-abc c-im)]))
+  (op double-neg () (c-x) ([reg c-im]))
+    (op complex () (c) ([reg c-re] [reg c-x]))
+    (op pointer-add () (t) ([reg t] [const (size-of c-abc)])))
+(define (load-c-backward-bc-1/AB-table-conj b c t)
+    (load double () b-re ([reg t] [const (offset-of c-abc b-re)]))
+    (load double () b-im ([reg t] [const (offset-of c-abc b-im)]))
+    (op double-neg () (b-x) ([reg b-im]))
+    (op complex () (b) ([reg b-re] [reg b-x]))
+    (load double () c-re ([reg t] [const (offset-of c-abc c-re)]))
+    (load double () c-im ([reg t] [const (offset-of c-abc c-im)]))
+    (op double-neg () (c-x) ([reg c-im]))
+    (op complex () (c) ([reg c-re] [reg c-x]))
+    (op pointer-add () (t) ([reg t] [const (- (size-of c-abc))])))
+
+
+(define (S-compute-A-upper res-x get-ab mem-part scale-op madd-op
+                           l-s s-1-size p-table src-x)
+  (op nop (start S-compute-A-upper) () ())
+  (op pointer-add () (src-L) ([reg src-x] [reg s-1-size]))
+  (op pointer-move () (d) ([reg res-x]))
+  (op pointer-move () (s) ([reg src-x]))
+  (op pointer-move () (v&w) ([reg p-table]))
+  (load mem-part () x ([reg src-L]))
+  (loop () (i [const 0] [reg l-s])
+    (macro get-ab [reg v] [reg w] [reg v&w])
+    (op scale-op () (y) ([reg v] [reg x]))
+    (load mem-part () x ([reg s]))
+    (op pointer-add () (s) ([reg s] [const (size-of Fermion)]))
+    (op madd-op () (z) ([reg y] [reg w] [reg x]))
+    (store mem-part () ([reg d]) [reg z])
+    (op pointer-add () (d) ([reg d] [const (size-of Fermion)])))
+  (op nop (end S-compute-A-upper) () ()))
+
+(define (S-compute-A-lower res-x get-ab mem-part scale-op madd-op
+                           l-s s-1-size m-table src-x)
+  (op nop (start S-compute-A-lower) () ())
+  (op pointer-add () (d) ([reg res-x] [reg s-1-size]))
+  (op pointer-add () (s) ([reg src-x] [reg s-1-size]))
+  (op pointer-move () (v&w) ([reg m-table]))
+  (load mem-part () x ([reg src-x]))
+  (loop () (i [const 0] [reg l-s])
+    (macro get-ab [reg v] [reg w] [reg v&w])
+    (op scale-op () (y) ([reg v] [reg x]))
+    (load mem-part () x ([reg s]))
+    (op pointer-add () (s) ([reg s] [const (- (size-of Fermion))]))
+    (op madd-op () (z) ([reg y] [reg w] [reg x]))
+    (store mem-part () ([reg d]) [reg z])
+    (op pointer-add () (d) ([reg d] [const (- (size-of Fermion))])))
+  (op nop (end S-compute-A-lower) () ()))
+
+(define (S-compute-A res-x l-s s-1-size p-table m-table src-x)
+  (macro S-compute-A-upper [reg res-x]
+                           [macro get-ab-v&w]
+                           [const 'qcd-fermion-lo]
+                           [const 'qcd-scalef-lo]
+                           [const 'qcd-maddf-lo]
+                           [reg l-s] [reg s-1-size] [reg p-table] [reg src-x])
+  (macro S-compute-A-lower [reg res-x]
+                           [macro get-ab-v&w]
+                           [const 'qcd-fermion-hi]
+                           [const 'qcd-scalef-hi]
+                           [const 'qcd-maddf-hi]
+                           [reg l-s] [reg s-1-size] [reg m-table] [reg src-x]))
+
+(define (S-compute-A* res-x l-s s-1-size p-table m-table src-x)
+  (macro S-compute-A-upper [reg res-x]
+                           [macro get-ab-v&w]
+                           [const 'qcd-fermion-hi]
+                           [const 'qcd-scalef-hi]
+                           [const 'qcd-maddf-hi]
+                           [reg l-s] [reg s-1-size] [reg p-table] [reg src-x])
+  (macro S-compute-A-lower [reg res-x]
+                           [macro get-ab-v&w]
+                           [const 'qcd-fermion-lo]
+                           [const 'qcd-scalef-lo]
+                           [const 'qcd-maddf-lo]
+                           [reg l-s] [reg s-1-size] [reg m-table] [reg src-x]))
+
+(define (S-compute-complex-A res-x l-s s-1-size p-table m-table src-x)
+  (macro S-compute-A-upper [reg res-x]
+                           [macro get-c-ab-v&w]
+                           [const 'qcd-fermion-lo]
+                           [const 'qcd-complex-scalef-lo]
+                           [const 'qcd-cmaddf-lo]
+                           [reg l-s] [reg s-1-size] [reg p-table] [reg src-x])
+  (macro S-compute-A-lower [reg res-x]
+                           [macro get-c-ab-v&w]
+                           [const 'qcd-fermion-hi]
+                           [const 'qcd-complex-scalef-hi]
+                           [const 'qcd-cmaddf-hi]
+                           [reg l-s] [reg s-1-size] [reg m-table] [reg src-x]))
+(define (S-compute-complex-A* res-x l-s s-1-size p-table m-table src-x)
+   (macro S-compute-A-upper [reg res-x]
+                            [macro get-c-ab-v&w-conj]
+                            [const 'qcd-fermion-hi]
+                            [const 'qcd-complex-scalef-hi]
+                            [const 'qcd-cmaddf-hi]
+                            [reg l-s] [reg s-1-size] [reg p-table] [reg src-x])
+   (macro S-compute-A-lower [reg res-x]
+                            [macro get-c-ab-v&w-conj]
+                            [const 'qcd-fermion-lo]
+                            [const 'qcd-complex-scalef-lo]
+                            [const 'qcd-cmaddf-lo]
+                            [reg l-s] [reg s-1-size] [reg m-table] [reg src-x]))
+
+;;; a + Ab and a + A*b
+(define (S-compute-add-A-upper res-x get-ab mem-part madd-op
+                               l-s s-1-size sa-x p-table src-x)
+  (op nop (start S-compute-add-A-upper) () ())
+  (op pointer-add () (src-L) ([reg src-x] [reg s-1-size]))
+  (op pointer-move () (d) ([reg res-x]))
+  (op pointer-move () (a) ([reg sa-x]))
+  (op pointer-move () (s) ([reg src-x]))
+  (op pointer-move () (v&w) ([reg p-table]))
+  (load mem-part () x ([reg src-L]))
+  (loop () (i [const 0] [reg l-s])
+    (load mem-part () q ([reg a]))
+    (op pointer-add () (a) ([reg a] [const (size-of Fermion)]))
+    (macro get-ab [reg v] [reg w] [reg v&w])
+    (op madd-op () (y) ([reg q] [reg v] [reg x]))
+    (load mem-part () x ([reg s]))
+    (op pointer-add () (s) ([reg s] [const (size-of Fermion)]))
+    (op madd-op () (z) ([reg y] [reg w] [reg x]))
+    (store mem-part () ([reg d]) [reg z])
+    (op pointer-add () (d) ([reg d] [const (size-of Fermion)])))
+  (op nop (end S-compute-add-A-upper) () ()))
+
+(define (S-compute-add-A-lower res-x get-ab mem-part madd-op
+                               l-s s-1-size sa-x m-table src-x)
+  (op nop (start S-compute-add-A-lower) () ())
+  (op pointer-add () (d) ([reg res-x] [reg s-1-size]))
+  (op pointer-add () (a) ([reg sa-x] [reg s-1-size]))
+  (op pointer-add () (s) ([reg src-x] [reg s-1-size]))
+  (op pointer-move () (v&w) ([reg m-table]))
+  (load mem-part () x ([reg src-x]))
+  (loop () (i [const 0] [reg l-s])
+    (load mem-part () q ([reg a]))
+    (op pointer-add () (a) ([reg a] [const (- (size-of Fermion))]))
+    (macro get-ab [reg v] [reg w] [reg v&w])
+    (op madd-op () (y) ([reg q] [reg v] [reg x]))
+    (load mem-part () x ([reg s]))
+    (op pointer-add () (s) ([reg s] [const (- (size-of Fermion))]))
+    (op madd-op () (z) ([reg y] [reg w] [reg x]))
+    (store mem-part () ([reg d]) [reg z])
+    (op pointer-add () (d) ([reg d] [const (- (size-of Fermion))])))
+  (op nop (end S-compute-add-A-lower) () ()))
+
+(define (S-compute-add-A res-x l-s s-1-size sa-x p-table m-table src-x)
+  (macro S-compute-add-A-upper [reg res-x]
+                               [macro get-ab-v&w]
+                               [const 'qcd-fermion-lo]
+                               [const 'qcd-maddf-lo]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg p-table] [reg src-x])
+  (macro S-compute-add-A-lower [reg res-x]
+                               [macro get-ab-v&w]
+                               [const 'qcd-fermion-hi]
+                               [const 'qcd-maddf-hi]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg m-table] [reg src-x]))
+
+(define (S-compute-add-A* res-x l-s s-1-size sa-x p-table m-table src-x)
+  (macro S-compute-add-A-upper [reg res-x]
+                               [macro get-ab-v&w]
+                               [const 'qcd-fermion-hi]
+                               [const 'qcd-maddf-hi]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg p-table] [reg src-x])
+  (macro S-compute-add-A-lower [reg res-x]
+                               [macro get-ab-v&w]
+                               [const 'qcd-fermion-lo]
+                               [const 'qcd-maddf-lo]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg m-table] [reg src-x]))
+
+(define (S-compute-sub-A res-x l-s s-1-size sa-x p-table m-table src-x)
+  (macro S-compute-add-A-upper [reg res-x]
+                               [macro get-ab-v&w]
+                               [const 'qcd-fermion-lo]
+                               [const 'qcd-msubf-lo]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg p-table] [reg src-x])
+  (macro S-compute-add-A-lower [reg res-x]
+                               [macro get-ab-v&w]
+                               [const 'qcd-fermion-hi]
+                               [const 'qcd-msubf-hi]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg m-table] [reg src-x]))
+
+(define (S-compute-sub-A* res-x l-s s-1-size sa-x p-table m-table src-x)
+  (macro S-compute-add-A-upper [reg res-x]
+                               [macro get-ab-v&w]
+                               [const 'qcd-fermion-hi]
+                               [const 'qcd-msubf-hi]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg p-table] [reg src-x])
+  (macro S-compute-add-A-lower [reg res-x]
+                               [macro get-ab-v&w]
+                               [const 'qcd-fermion-lo]
+                               [const 'qcd-msubf-lo]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg m-table] [reg src-x]))
+
+(define (S-compute-add-complex-A res-x l-s s-1-size sa-x p-table m-table src-x)
+  (macro S-compute-add-A-upper [reg res-x]
+                               [macro get-c-ab-v&w]
+                               [const 'qcd-fermion-lo]
+                               [const 'qcd-cmaddf-lo]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg p-table] [reg src-x])
+  (macro S-compute-add-A-lower [reg res-x]
+                               [macro get-c-ab-v&w]
+                               [const 'qcd-fermion-hi]
+                               [const 'qcd-cmaddf-hi]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg m-table] [reg src-x]))
+
+(define (S-compute-add-complex-A* res-x l-s s-1-size sa-x p-table m-table src-x)
+  (macro S-compute-add-A-upper [reg res-x]
+                               [macro get-c-ab-v&w-conj]
+                               [const 'qcd-fermion-hi]
+                               [const 'qcd-cmaddf-hi]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg p-table] [reg src-x])
+  (macro S-compute-add-A-lower [reg res-x]
+                               [macro get-c-ab-v&w-conj]
+                               [const 'qcd-fermion-lo]
+                               [const 'qcd-cmaddf-lo]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg m-table] [reg src-x]))
+
+(define (S-compute-sub-complex-A res-x l-s s-1-size sa-x p-table m-table src-x)
+  (macro S-compute-add-A-upper [reg res-x]
+                               [macro get-c-ab-v&w]
+                               [const 'qcd-fermion-lo]
+                               [const 'qcd-cmsubf-lo]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg p-table] [reg src-x])
+  (macro S-compute-add-A-lower [reg res-x]
+                               [macro get-c-ab-v&w]
+                               [const 'qcd-fermion-hi]
+                               [const 'qcd-cmsubf-hi]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg m-table] [reg src-x]))
+
+(define (S-compute-sub-complex-A* res-x l-s s-1-size sa-x p-table m-table src-x)
+  (macro S-compute-add-A-upper [reg res-x]
+                               [macro get-c-ab-v&w-conj]
+                               [const 'qcd-fermion-hi]
+                               [const 'qcd-cmsubf-hi]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg p-table] [reg src-x])
+  (macro S-compute-add-A-lower [reg res-x]
+                               [macro get-c-ab-v&w-conj]
+                               [const 'qcd-fermion-lo]
+                               [const 'qcd-cmsubf-lo]
+                               [reg l-s] [reg s-1-size]
+                               [reg sa-x] [reg m-table] [reg src-x]))
+
+;;; a - A b and the norm of the result
+(define (S-compute-add-A-norm-upper res-x res-norm get-ab mem-part madd-op norm-op
+                                    l-s s-1-size src-ax p-table src-bx)
+  (op nop (start S-compute-A-norm-upper) () ())
+  (op pointer-add () (src-L) ([reg src-bx] [reg s-1-size]))
+  (op pointer-move () (d) ([reg res-x]))
+  (op pointer-move () (a) ([reg src-ax]))
+  (op pointer-move () (b) ([reg src-bx]))
+  (op pointer-move () (v&w) ([reg p-table]))
+  (load mem-part () x ([reg src-L]))
+  (loop () (i [const 0] [reg l-s])
+    (load mem-part () q ([reg a]))
+    (op pointer-add () (a) ([reg a] [const (size-of Fermion)]))
+    (macro get-ab [reg v] [reg w] [reg v&w])
+    (op madd-op () (y) ([reg q] [reg v] [reg x]))
+    (load mem-part () x ([reg b]))
+    (op pointer-add () (b) ([reg b] [const (size-of Fermion)]))
+    (op madd-op () (z) ([reg y] [reg w] [reg x]))
+    (op norm-op () (res-norm) ([reg res-norm] [reg z]))
+    (store mem-part () ([reg d]) [reg z])
+    (op pointer-add () (d) ([reg d] [const (size-of Fermion)])))
+  (op nop (end S-compute-A-norm-upper) () ()))
+
+(define (S-compute-add-A-norm-lower res-x res-norm get-ab mem-part madd-op norm-op
+                                    l-s s-1-size src-ax m-table src-bx)
+  (op nop (start S-compute-A-norm-lower) () ())
+  (op pointer-add () (d) ([reg res-x] [reg s-1-size]))
+  (op pointer-add () (a) ([reg src-ax] [reg s-1-size]))
+  (op pointer-add () (b) ([reg src-bx] [reg s-1-size]))
+  (op pointer-move () (v&w) ([reg m-table]))
+  (load mem-part () x ([reg src-bx]))
+  (loop () (i [const 0] [reg l-s])
+    (load mem-part () q ([reg a]))
+    (op pointer-add () (a) ([reg a] [const (- (size-of Fermion))]))
+    (macro get-ab [reg v] [reg w] [reg v&w])
+    (op madd-op () (y) ([reg q] [reg v] [reg x]))
+    (load mem-part () x ([reg b]))
+    (op pointer-add () (b) ([reg b] [const (- (size-of Fermion))]))
+    (op madd-op () (z) ([reg y] [reg w] [reg x]))
+    (op norm-op () (res-norm) ([reg res-norm] [reg z]))
+    (store mem-part () ([reg d]) [reg z])
+    (op pointer-add () (d) ([reg d] [const (- (size-of Fermion))])))
+  (op nop (end S-compute-A-norm-lower) () ()))
+
+(define (S-compute-sub-A-norm res-x res-norm l-s s-1-size
+                              src-ax p-table m-table src-bx)
+  (macro S-compute-add-A-norm-upper [reg res-x] [reg res-norm]
+                                    [macro get-ab-v&w]
+                                    [const 'qcd-fermion-lo]
+                                    [const 'qcd-msubf-lo]
+                                    [const 'qcd-fnorm-lo-add]
+                                    [reg l-s] [reg s-1-size]
+                                    [reg src-ax] [reg p-table] [reg src-bx])
+  (macro S-compute-add-A-norm-lower [reg res-x] [reg res-norm]
+                                    [macro get-ab-v&w]
+                                    [const 'qcd-fermion-hi]
+                                    [const 'qcd-msubf-hi]
+                                    [const 'qcd-fnorm-hi-add]
+                                    [reg l-s] [reg s-1-size]
+                                    [reg src-ax] [reg m-table] [reg src-bx]))
+
+(define (S-compute-sub-complex-A-norm res-x res-norm l-s s-1-size
+                              src-ax p-table m-table src-bx)
+  (macro S-compute-add-A-norm-upper [reg res-x] [reg res-norm]
+                                    [macro get-c-ab-v&w]
+                                    [const 'qcd-fermion-lo]
+                                    [const 'qcd-cmsubf-lo]
+                                    [const 'qcd-fnorm-lo-add]
+                                    [reg l-s] [reg s-1-size]
+                                    [reg src-ax] [reg p-table] [reg src-bx])
+  (macro S-compute-add-A-norm-lower [reg res-x] [reg res-norm]
+                                    [macro get-c-ab-v&w]
+                                    [const 'qcd-fermion-hi]
+                                    [const 'qcd-cmsubf-hi]
+                                    [const 'qcd-fnorm-hi-add]
+                                    [reg l-s] [reg s-1-size]
+                                    [reg src-ax] [reg m-table] [reg src-bx]))
+
+;;; Inverses of A and A*
+(define (S-compute-1/A-upper res-x
+                             get-1/AB-abc
+                             load-1/AB-z
+                             load-1/AB-a
+                             load-1/AB-bc
+                             mem-part scale-op madd-op
+                             l-s p-table src-x)
+  (op nop (start S-compute-1/A-upper) () ())
+  (macro get-1/AB-abc [reg t] [reg p-table])
+  (load mem-part () q ([reg src-x]))
+  (op pointer-add () (x) ([reg src-x] [const (size-of Fermion)]))
+  (op pointer-add () (y) ([reg res-x] [const (size-of Fermion)]))
+  (loop () (k [const 1] [reg l-s])
+    (macro load-1/AB-a [reg a] [reg t])
+    (load mem-part () p ([reg x]))
+    (op pointer-add () (x) ([reg x] [const (size-of Fermion)]))
+    (store mem-part () ([reg y]) [reg p])
+    (op pointer-add () (y) ([reg y] [const (size-of Fermion)]))
+    (op madd-op () (q) ([reg q] [reg a] [reg p])))
+  (macro load-1/AB-z [reg z] [reg p-table])
+  (op scale-op () (zq) ([reg z] [reg q]))
+  (store mem-part () ([reg res-x]) [reg zq])
+  (op pointer-add () (r) ([reg res-x] [const (size-of Fermion)]))
+  (macro get-1/AB-abc [reg t] [reg p-table])
+  (loop () (k [const 1] [reg l-s])
+    (macro load-1/AB-bc [reg b] [reg c] [reg t])
+    (op scale-op () (bq) ([reg b] [reg zq]))
+    (load mem-part () p ([reg r]))
+    (op madd-op () (zq) ([reg bq] [reg c] [reg p]))
+    (store mem-part () ([reg r]) [reg zq])
+    (op pointer-add () (r) ([reg r] [const (size-of Fermion)])))
+  (op nop (end S-compute-1/A-upper) () ()))
+
+(define (S-compute-1/A-lower res-x
+                             get-1/AB-abc
+                             load-1/AB-z
+                             load-1/AB-a
+                             load-1/AB-bc
+                             get-down-1/AB-abc
+                             mem-part scale-op madd-op 
+                             l-s s-1-size m-table src-x)
+  (op nop (start S-compute-1/A-lower) () ())
+  (op pointer-add () (src-n) ([reg src-x] [reg s-1-size]))
+  (load mem-part () q ([reg src-n]))
+  (op pointer-move () (x) ([reg src-x]))
+  (op pointer-move () (y) ([reg res-x]))
+  (macro get-1/AB-abc [reg t] [reg m-table])
+  (loop () (k [const 1] [reg l-s])
+    (macro load-1/AB-a [reg a] [reg t])
+    (load mem-part () src-k ([reg x]))
+    (op pointer-add () (x) ([reg x] [const (size-of Fermion)]))
+    (store mem-part () ([reg y]) [reg src-k])
+    (op pointer-add () (y) ([reg y] [const (size-of Fermion)]))
+    (op madd-op () (q) ([reg q] [reg a] [reg src-k])))
+  (macro load-1/AB-z [reg z] [reg m-table])
+  (op scale-op () (zq) ([reg z] [reg q]))
+  (store mem-part () ([reg y]) [reg zq])
+  (op pointer-add () (x) ([reg y] [const (- (size-of Fermion))]))
+  (macro get-down-1/AB-abc [reg t] [reg t])
+  (loop () (k [const 1] [reg l-s])
+    (macro load-1/AB-bc [reg b] [reg c] [reg t])
+    (op scale-op () (bq) ([reg b] [reg zq]))
+    (load mem-part () p ([reg x]))
+    (op madd-op () (zq) ([reg bq] [reg c] [reg p]))
+    (store mem-part () ([reg x]) [reg zq])
+    (op pointer-add () (x) ([reg x] [const (- (size-of Fermion))])))
+  (op nop (end S-compute-1/A-lower) () ()))
+
+(define (S-compute-1/A res-x l-s s-1-size p-table m-table src-x)
+  (macro S-compute-1/A-upper [reg res-x]
+                             [macro get-abc-1/AB-table]
+                             [macro load-z-1/AB-table]
+                             [macro load-a-1/AB-table]
+                             [macro load-forward-bc-1/AB-table]
+                             [const 'qcd-fermion-lo]
+                             [const 'qcd-scalef-lo]
+                             [const 'qcd-maddf-lo]
+                             [reg l-s] [reg p-table] [reg src-x])
+  (macro S-compute-1/A-lower [reg res-x]
+                             [macro get-abc-1/AB-table]
+                             [macro load-z-1/AB-table]
+                             [macro load-a-1/AB-table]
+                             [macro load-backward-bc-1/AB-table]
+                             [macro get-backward-abc-1/AB-table]
+                             [const 'qcd-fermion-hi]
+                             [const 'qcd-scalef-hi]
+                             [const 'qcd-maddf-hi]
+                             [reg l-s] [reg s-1-size]
+                             [reg m-table] [reg src-x]))
+
+(define (S-compute-1/A* res-x l-s s-1-size p-table m-table src-x)
+  (macro S-compute-1/A-lower [reg res-x]
+                             [macro get-abc-1/AB-table]
+                             [macro load-z-1/AB-table]
+                             [macro load-a-1/AB-table]
+                             [macro load-backward-bc-1/AB-table]
+                             [macro get-backward-abc-1/AB-table]
+                             [const 'qcd-fermion-lo]
+                             [const 'qcd-scalef-lo]
+                             [const 'qcd-maddf-lo]
+                             [reg l-s] [reg s-1-size]
+                             [reg p-table] [reg src-x])
+  (macro S-compute-1/A-upper [reg res-x]
+                             [macro get-abc-1/AB-table]
+                             [macro load-z-1/AB-table]
+                             [macro load-a-1/AB-table]
+                             [macro load-forward-bc-1/AB-table]
+                             [const 'qcd-fermion-hi]
+                             [const 'qcd-scalef-hi]
+                             [const 'qcd-maddf-hi]
+                             [reg l-s]
+                             [reg m-table] [reg src-x]))
+
+(define (S-compute-complex-1/A res-x l-s s-1-size p-table m-table src-x)
+  (macro S-compute-1/A-upper [reg res-x]
+                             [macro get-c-abc-1/AB-table]
+                             [macro load-c-z-1/AB-table]
+                             [macro load-c-a-1/AB-table]
+                             [macro load-c-forward-bc-1/AB-table]
+                             [const 'qcd-fermion-lo]
+                             [const 'qcd-complex-scalef-lo]
+                             [const 'qcd-cmaddf-lo]
+                             [reg l-s] [reg p-table] [reg src-x])
+  (macro S-compute-1/A-lower [reg res-x]
+                             [macro get-c-abc-1/AB-table]
+                             [macro load-c-z-1/AB-table]
+                             [macro load-c-a-1/AB-table]
+                             [macro load-c-backward-bc-1/AB-table]
+                             [macro get-c-backward-abc-1/AB-table]
+                             [const 'qcd-fermion-hi]
+                             [const 'qcd-complex-scalef-hi]
+                             [const 'qcd-cmaddf-hi]
+                             [reg l-s] [reg s-1-size]
+                             [reg m-table] [reg src-x]))
+
+(define (S-compute-complex-1/A* res-x l-s s-1-size p-table m-table src-x)
+  (macro S-compute-1/A-lower [reg res-x]
+                             [macro get-c-abc-1/AB-table]
+                             [macro load-c-z-1/AB-table-conj]
+                             [macro load-c-a-1/AB-table-conj]
+                             [macro load-c-backward-bc-1/AB-table-conj]
+                             [macro get-c-backward-abc-1/AB-table]
+                             [const 'qcd-fermion-lo]
+                             [const 'qcd-complex-scalef-lo]
+                             [const 'qcd-cmaddf-lo]
+                             [reg l-s] [reg s-1-size]
+                             [reg p-table] [reg src-x])
+  (macro S-compute-1/A-upper [reg res-x]
+                             [macro get-c-abc-1/AB-table]
+                             [macro load-c-z-1/AB-table-conj]
+                             [macro load-c-a-1/AB-table-conj]
+                             [macro load-c-forward-bc-1/AB-table-conj]
+                             [const 'qcd-fermion-hi]
+                             [const 'qcd-complex-scalef-hi]
+                             [const 'qcd-cmaddf-hi]
+                             [reg l-s]
+                             [reg m-table] [reg src-x]))
+

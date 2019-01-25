@@ -1,0 +1,39 @@
+To install the library, you need to create a configuration for your machine.
+Consult existing configurations in config.* for inspiration. If none of the
+preexisting configuration fits your machine, choose one that is close enough
+and tweak it. Please send us back a new configuration file once it is working
+and we will include it in the official distribution.
+
+The following is the acutual build procedure we use on the MIT Blue Gene.
+
+1. Unpack the distribution:
+
+% bunzip2 < lhpc-afff-1.0.0.tar.bz | tar -xf -
+
+2. Build the library.
+
+% make CONFIG=config.bgl
+
+3. Install it
+
+% su
+# make CONFIG=config.bgl install prefix=/opt/SciDEC/fen64/lhpc-aff-1.0.0
+# exit
+
+4. After building the library you may build and install an optional Python
+package. It requires python 2.5 or newer. Follow the steps below
+
+4.1 Go to the python directory in the AFF distribution
+
+% cd python
+
+4.2 Build the interface package
+
+% python2.5 setup.py build
+
+4.3 Either copy the aff module to your personal python den, or install it on
+the machine globally (you might need root priveleges for this step.)
+
+% su
+# python2.5 setup.py install
+

@@ -1,0 +1,3 @@
+(procedure test-op ([stem "xx"])
+       ([cl pointer "x" "struct Clover"])
+   (load qcd-clover () xxx ([reg cl])))

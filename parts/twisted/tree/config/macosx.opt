@@ -1,0 +1,8 @@
+# Configuration for my laptop
+#
+QMP_TOP    = /usr/local/packages/qmp-2.3.1
+QDP_TOP    = /usr/local/packages/qdp-1.8.0
+CC         = gcc
+CFLAGS     = -Wall -O3
+AR         = ar
+RANLIB     = ranlib

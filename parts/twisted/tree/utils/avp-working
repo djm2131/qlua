@@ -1,0 +1,15 @@
+#!/bin/sh
+
+USQCDDIST=$HOME/Local/macosx-working
+Nc=3
+targets="bgq/xlc cee-64"
+
+[ -d doc ] || mkdir doc
+utils/setup-nc $Nc
+make NC="$Nc" -C qa0 TARGETS="$targets" 
+COPTS="-g" ./configure \
+   --prefix=$HOME/Local/packages/twisted-working \
+   --target=cee-64 \
+   --with-qdp=$USQCDDIST/qdp \
+   --with-qmp=$USQCDDIST/qmp \
+   --with-gsl=$USQCDDIST/gsl

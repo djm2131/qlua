@@ -1,0 +1,29 @@
+;; compute r = 1/A* B* x for complex case
+(include "types.qa0")
+(include "defs-A.qa0")
+
+(procedure do-c-1/A*-B* ([stem "doc_A1xBx"]
+                       prec&color
+                       count-flops)
+       ([res-x     pointer   "res_x"      "struct Fermion *"         ]
+        [start     int       "start"      "size_t"                   ]
+        [size      int       "size"       "size_t"                   ]
+        [l-s       int       "Ls"         "size_t"                   ]
+        [b+table   pointer   "bp_table"   "const struct ABTable *"   ]
+        [b-table   pointer   "bm_table"   "const struct ABTable *"   ]
+        [ai+table  pointer   "aip_table"  "const struct ABiTable *"  ]
+        [ai-table  pointer   "aim_table"  "const struct ABiTable *"  ]
+        [src-x     pointer   "src_x"      "const struct Fermion *"   ])
+  (op int-mul () (s-f-line) ([reg l-s] [const (size-of Fermion)]))
+  (op int-sub () (s-1-size) ([reg s-f-line] [const (size-of Fermion)]))
+  (op int-mul () (start*ls) ([reg start] [reg l-s]))
+  (op int-mul () (offset-x) ([reg start*ls] [const (size-of Fermion)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg offset-x]))
+  (op pointer-add () (src-x) ([reg src-x] [reg offset-x]))
+  (loop () (i [const 0] [reg size])
+    (macro S-compute-complex-A* [reg res-x] [reg l-s] [reg s-1-size]
+                                [reg b+table] [reg b-table] [reg src-x])
+    (macro S-compute-complex-1/A* [reg res-x] [reg l-s] [reg s-1-size]
+                                  [reg ai+table] [reg ai-table] [reg res-x])
+    (op pointer-add () (src-x) ([reg src-x] [reg s-f-line]))
+    (op pointer-add () (res-x) ([reg res-x] [reg s-f-line]))))

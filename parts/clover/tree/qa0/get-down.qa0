@@ -1,0 +1,11 @@
+(include "types.qa0")
+
+(procedure get-down-pack ([stem "get_down_pack"]
+                          color)
+           ([f-ptr   pointer "f"       "size_t *"                 ]
+            [up-pack pointer "up_pack" "const struct down_pack *" ]
+            [index   int     "p"       "size_t"                   ])
+   (op int-mul () (x) ([reg index] [const (size-of down-pack)]))
+   (op pointer-add () (y) ([reg up-pack] [reg x]))
+   (load int () f ([reg y] [const (offset-of down-pack fermion)]))
+   (store int () ([reg f-ptr]) [reg f]))

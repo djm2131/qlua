@@ -1,0 +1,8 @@
+(include "types.qa0")
+
+(procedure strideof-of-vector-fermion ([stem "strideof_vfermion"]
+                                       [return stride int "size_t"]
+                                       prec&color)
+           ([volume int "volume" "size_t"])
+   (op int-mul () (stride) ([reg volume] [const (size-of Fermion)])))
+

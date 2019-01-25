@@ -1,0 +1,18 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+
+(procedure put-c-AB-Table ([stem "put_cABTable"])
+           ([ab-table  pointer "cabtable"  "struct ABTable *"  ]
+            [index     int     "p"         "size_t"            ]
+            [w-val-re  double  "w_val_re"  "double"            ]
+            [w-val-im  double  "w_val_im"  "double"            ]
+            [v-val-re  double  "v_val_re"  "double"            ]
+            [v-val-im  double  "v_val_im"  "double"            ])
+   (op int-mul () (x) ([reg index] [const (size-of c-AB-Table)]))
+   (op pointer-add () (ptr) ([reg ab-table] [reg x]))
+   (store double () ([reg ptr] [const (offset-of c-AB-Table w-re)]) [reg w-val-re])
+   (store double () ([reg ptr] [const (offset-of c-AB-Table w-im)]) [reg w-val-im])
+   (store double () ([reg ptr] [const (offset-of c-AB-Table v-re)]) [reg v-val-re])
+   (store double () ([reg ptr] [const (offset-of c-AB-Table v-im)]) [reg v-val-im]))
+

@@ -1,0 +1,28 @@
+(verbose ([c99 bgl/xlc dry] "#include <complex.h>"))
+(verbose ([c99 bgl/xlc dry] "struct Fermion;"))
+                               
+(procedure K-n ([stem "K"] count-flops)
+              ([res    pointer "res"    "void *"  ]
+               [scale  double  "scale"  "double"  ]
+               [U      double  "scale"  "void *"  ]
+               [src-1  pointer "src_1"  "void *"  ]
+               [src-2  pointer "src_2"  "void *"  ]
+               [src-3  pointer "src_3"  "void *"  ])
+  (load qcd-su-n () uu ([reg U]))
+  (load qcd-staggered-fermion () x-1 ([reg src-1]))
+  (load qcd-staggered-fermion () x-2 ([reg src-2]))
+  (load qcd-staggered-fermion () x-3 ([reg src-3]))
+  (op qcd-adds () (x-1+2) ([reg x-1] [reg x-2]))
+  (op qcd-madds () (z) ([reg x-1+2] [reg scale] [reg x-3]))
+  (op qcd-msubs () (z) ([reg x-1] [reg scale] [reg z]))
+  (op qcd-sdot-init () (dot) ())
+  (op qcd-sdot-add () (dot) ([reg dot] [reg x-1] [reg z]))
+  (op qcd-sdot-fini () (r-dot) ([reg dot]))
+  (op qcd-sdot-init () (dot) ())
+  (op qcd-sdot-add () (dot) ([reg dot] [reg x-1] [reg z]))
+  (op qcd-sdot-fini () (r-dot) ([reg dot]))
+  (op qcd-snorm-init () (r-norm) ())
+  (op qcd-snorm-add () (r-norm) ([reg r-norm] [reg x-3]))
+  (op qcd-snorm-fini () (norm) ([reg r-norm]))
+  (store qcd-staggered-fermion () ([reg res]) [reg z])
+)

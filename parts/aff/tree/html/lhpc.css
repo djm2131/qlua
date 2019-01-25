@@ -1,0 +1,164 @@
+body {
+	margin:0px;
+	padding:0px;
+	color:#333;
+	background-color:white;
+	font-family:verdana, arial, helvetica, sans-serif;
+}
+
+
+td#body {
+	vertical-align:top;
+        position: static;
+	margin:0px;
+	padding:0px;
+	font-family:verdana, arial, helvetica, sans-serif;
+	/* font-size:90%; */
+	color:#333;
+	background-color:white;
+}
+
+h1 {
+	margin:0px 0px 5px 0px;
+	padding:0px;
+	font-size:28px;
+	line-height:28px;
+	font-weight:900;
+	color:#ccc;
+	}
+
+h2 {
+	margin:0px 0px 5px 0px;
+	color:#222;
+	}
+
+h3 {
+	color:#344;
+	}
+
+#bugle {
+	margin:0px 0px 5px 0px;
+	padding:0px;
+	font-size:18px;
+	line-height:18px;
+	font-weight:900;
+	color:#ccc;
+	text-align:right;
+	}
+
+p {
+	margin:0px 0px 16px 0px;
+	padding:0px;
+	font-size: 110%;
+	}
+
+#navi a {
+	color:#09c;
+	font-size:90%;
+	text-decoration:none;
+	text-align:left;
+	font-weight:600;
+	font-family:verdana, arial, helvetica, sans-serif;
+	}
+
+#navi a:link {color:#09c;}
+#navi a:visited {color:#09c;}
+#navi a:hover {background-color:#eee;}
+
+a {
+	color:#09c;
+	font-size:90%;
+	text-decoration:none;
+	font-weight:600;
+	font-family:verdana, arial, helvetica, sans-serif;
+	}
+a:link {color:#09c;}
+a:visited {color:#09c;}
+
+#bannerline {
+	margin:00px 0px 00px 0px;
+	padding:08px 0px 0px 10px;
+	/* For IE5/Win's benefit height = [correct height] + [top padding] 
++ [top and bottom border widths] */
+	border-style:solid;
+	border-color:black;
+	border-width:1px 0px; /* top and bottom borders: 1px; left and 
+right borders: 0px */
+	background-color:#eee;
+
+/* Here is the ugly brilliant hack that protects IE5/Win from its own 
+stupidity. 
+Thanks to Tantek Celik for the hack and to Eric Costello for publicizing 
+it. 
+IE5/Win incorrectly parses the "\"}"" value, prematurely closing the style 
+declaration. The incorrect IE5/Win value is above, while the correct value 
+is 
+below. See http://glish.com/css/hacks.asp for details. */
+	voice-family: "\"}\"";
+	voice-family:inherit;
+	}
+
+td#navi {
+	vertical-align:top;
+	color:#09c;
+	font-size:109%;
+	/* font-size:89%; */
+	/*font-size:17px;*/
+	text-decoration:none;
+	text-align:left;
+	font-weight:600;
+	font-family:verdana, arial, helvetica, sans-serif;
+
+	line-height:20px;
+	padding:00px;
+	padding-bottom:5px;
+	padding-right:5px;
+
+	/*width:16%;*/
+	width:240px;
+
+	}
+td#navilist {
+	vertical-align:top;
+	color:#09c;
+	font-size:109%;
+	/* font-size:89%; */
+	/*font-size:17px;*/
+	text-decoration:none;
+	text-align:left;
+	font-weight:600;
+	font-family:verdana, arial, helvetica, sans-serif;
+
+	line-height:17px;
+	padding:00px;
+	padding-bottom:5px;
+	padding-right:5px;
+
+	/*width:16%;*/
+	width:90px;
+
+	}
+
+
+td#summary {
+background-color: transparent; color: black;
+padding: 0.5em; 
+/* 
+font: 95% verdana, arial, helvetica, sans-serif;
+font-size: 80%;
+*/
+font-family: verdana, arial, helvetica, sans-serif;
+vertical-align: top;
+border-bottom: 1px solid rgb(80%, 75%, 70%);
+border-right: 1px solid rgb(80%, 75%, 70%);
+border-top: 1px solid rgb(80%, 75%, 70%);
+border-left: 1px solid rgb(80%, 75%, 70%);
+
+}
+	
+
+#footer {
+	/* position: bottom left; */
+	font-size:80%;
+}
+

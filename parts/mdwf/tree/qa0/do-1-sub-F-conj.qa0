@@ -1,0 +1,33 @@
+;; compute r = phi - B 1/A F psi
+
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+(include "defs-A.qa0")
+(include "defs-F.qa0")
+
+(procedure do-1-sub-F-conj ([stem "do_1mFx"]
+                            prec&color
+                            count-flops)
+       ([res-x     pointer   "res_x"      "struct Fermion *"         ]
+        [start     int       "start"      "size_t"                   ]
+        [size      int       "size"       "size_t"                   ]
+        [l-s       int       "Ls"         "size_t"                   ]
+        [nb        pointer   "neighbor"   "const struct neighbor *"  ]
+        [U         pointer   "U"          "const struct SUn *"       ]
+        [src-x     pointer   "src_x"      "const struct Fermion *"   ]
+        [src-y     pointer   "src_y"      "const struct Fermion *"   ]
+        [buf*      pointer   "rb"         "void **"                  ])
+  (op int-mul () (s-h-line) ([reg l-s] [const (size-of Projected-Fermion)]))
+  (op int-mul () (s-f-line) ([reg l-s] [const (size-of Fermion)]))
+  (op int-mul () (start*ls) ([reg start] [reg l-s]))
+  (op int-mul () (offset-x) ([reg start*ls] [const (size-of Fermion)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg offset-x]))
+  (op pointer-add () (src-x) ([reg src-x] [reg offset-x]))
+  (op int-mul () (offset-nb) ([reg start] [const (size-of neighbor)]))
+  (op pointer-add () (nb) ([reg nb] [reg offset-nb]))
+  (loop () (i [const 0] [reg size])
+    (macro S-compute-sub-F* [reg res-x] [reg l-s] [reg s-f-line] [reg s-h-line]
+                            [reg nb] [reg src-x] [reg U]
+                            [reg src-y] [reg buf*])))
+

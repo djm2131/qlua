@@ -1,0 +1,214 @@
+#installation prefix
+PREFIX   = /global/homes/s/smeinel/QLUA/installation/cori/build2-20151208
+
+#parallel jobs in make
+XJOBS    = 32
+
+# host machine C compiler
+UCC      = cc
+UCFLAGS  = -O2 -xhost
+
+# target machine C compiler
+XCC      = cc -std=c99
+XCFLAGS  = -O2 -xhost
+XLDFLAGS =
+
+
+
+# Another target machine C compiler
+YCC      = cc
+YCFLAGS  = $(XCFLAGS)
+YLDFLAGS = $(XLDFLAGS)
+
+# target match C++ compiler
+XCXX      = CC
+XCXXFLAGS = $(XCFLAGS)
+
+
+# target machine Fortran compiler
+XFC      = ftn -assume nounderscore -nofor_main
+XFEXTRAS = -recursive
+XFFLAGS  = -O2 -xhost
+XFFLAGS0 = -O0
+XTIMER   = INT_CPU_TIME
+
+# target machine architecture for qa0
+XTARGET  = cee-64
+
+# target machine archiver
+XAR      = ar
+XRANLIB  = ranlib
+
+# number of colors in CLOVER
+XCLOVER_NC = 3
+# number of colors in TWISTED
+XTWISTED_NC = 3
+
+####### which parts to build
+LUA.build        = yes
+SFC.build        = yes
+QA0.build        = yes
+GSL.build        = yes
+ARPACK.build     = yes
+LAPACK.build     = yes
+AFF.build        = yes
+QMP.build        = yes
+HDF5.build       = yes
+QLA.build        = yes
+QIO.build        = yes
+QDP.build        = yes
+CLOVER.build     = yes
+TWISTED.build    = yes
+MDWF.build       = yes
+QOPQDP.build     = yes
+
+####### destinations
+AFF.dest     = $(PREFIX)/aff
+ARPACK.dest  = $(PREFIX)/arpack
+CLOVER.dest  = $(PREFIX)/clover
+TWISTED.dest = $(PREFIX)/twisted
+GSL.dest     = $(PREFIX)/gsl
+HDF5.dest    = $(PREFIX)/hdf5
+LAPACK.dest  = $(PREFIX)/lapack
+LUA.dest     = $(PREFIX)/lua
+MDWF.dest    = $(PREFIX)/mdwf
+QDP.dest     = $(PREFIX)/qdp
+QIO.dest     = $(PREFIX)/qio
+QLA.dest     = $(PREFIX)/qla
+QLUA.dest    = $(PREFIX)/qlua
+QMP.dest     = $(PREFIX)/qmp
+QOPQDP.dest  = $(PREFIX)/qopqdp
+
+####### configations
+
+LUA.cc     = $(XCC)
+LUA.cflags = $(XCFLAGS)
+LUA.ar     = $(XAR) cr
+LUA.ranlib = $(XRANLIB)
+
+SFC.cc    = $(UCC) $(UCFLAGS)
+
+QA0.cc      = $(UCC) $(UCFLAGS)
+
+GSL.config = CC="$(YCC)" \
+             CFLAGS="$(YCFLAGS)" \
+             --prefix="$(GSL.dest)" \
+             --disable-shared
+
+ARPACK.fc      = ${XFC}
+ARPACK.fflags  = ${XFFLAGS}
+ARPACK.pfc     = ${XFC}
+ARPACK.pfflags = ${XFFLAGS}
+ARPACK.mpilibs = ${XLIBS}
+
+LAPACK.shell       = /bin/sh
+LAPACK.fortran     = $(XFC)
+LAPACK.opts        = $(XFFLAGS) $(XFEXTRAS)
+LAPACK.drvopts     = $(XFFLAGS)
+LAPACK.noopt       = $(XFFLAGS0) $(XFEXTRAS)
+LAPACK.loader      = $(XFC)
+LAPACK.loadopts    =
+LAPACK.timer       = $(XTIMER)
+LAPACK.cc          = $(XCC)
+LAPACK.cflags      = $(XCFLAGS)
+LAPACK.arch        = $(XAR)
+LAPACK.archflags   = cr
+LAPACK.ranlib      = $(XRANLIB)
+
+AFF.cc        = $(XCC)
+AFF.cflags    = $(XCFLAGS)  -DHAS_INTEGRAL_OFF_T \
+                            -D_POSIX_C_SOURCE \
+                            -D_LARGEFILE_SOURCE \
+                            -D_FILE_OFFSET_BITS=64
+AFF.cxx       = $(XCXX)
+AFF.cxxflags  = $(XCXXFLAGS)
+AFF.ar        = $(XAR)
+AFF.ranlib    = $(XRANLIB)
+AFF.config    = linux
+
+QMP.config = CC="$(XCC) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE" \
+             AR="ar" \
+             RANLIB="$(XRANLIB)" \
+             CFLAGS="$(XCFLAGS)" \
+             --with-qmp-comms-type=MPI \
+             --prefix="$(QMP.dest)"
+
+HDF5.config = CC="$(XCC)" \
+              CFLAGS="$(XCFLAGS)" \
+              LD="$(XCC)" \
+              --prefix="$(HDF5.dest)" \
+              --enable-parallel
+
+QLA.config = CC="$(XCC)" \
+             CFLAGS="$(XCFLAGS)" \
+             --prefix="$(QLA.dest)"
+
+QIO.config = CC="$(XCC)" \
+             CFLAGS="$(XCFLAGS)" \
+             --enable-parallel-arch=parscalar \
+             --enable-largefile \
+             --with-qmp="$(QMP.dest)" \
+             --prefix="$(QIO.dest)"
+
+QDP.config = CC="$(XCC)" \
+             CFLAGS="$(XCFLAGS)" \
+             --with-qmp="$(QMP.dest)" \
+             --with-qio="$(QIO.dest)" \
+             --with-qla="$(QLA.dest)" \
+             --prefix="$(QDP.dest)"
+
+CLOVER.cc     = $(XCC)
+CLOVER.cflags = $(XCFLAGS)
+CLOVER.nc     = $(XCLOVER_NC)
+CLOVER.target = $(XTARGET)
+CLOVER.config = --target="$(XTARGET)" \
+                --with-qdp="$(QDP.dest)" \
+                --with-qmp="$(QMP.dest)" \
+                --with-gsl="$(GSL.dest)" \
+                --prefix="$(CLOVER.dest)"
+
+TWISTED.cc     = $(XCC)
+TWISTED.cflags = $(XCFLAGS)
+TWISTED.nc     = $(XTWISTED_NC)
+TWISTED.target = $(XTARGET)
+TWISTED.config = --target="$(XTARGET)" \
+                --with-qdp="$(QDP.dest)" \
+                --with-qmp="$(QMP.dest)" \
+                --with-gsl="$(GSL.dest)" \
+                --prefix="$(TWISTED.dest)"
+
+MDWF.cc     = $(XCC)
+MDWF.cflags = $(XCFLAGS)
+MDWF.target = $(XTARGET)
+MDWF.config = --target="$(XTARGET)" \
+              --with-qmp="$(QMP.dest)" \
+              --with-gsl="$(GSL.dest)" \
+              --prefix="$(MDWF.dest)"
+
+QOPQDP.config = --with-qdp="$(QDP.dest)" \
+                --with-qla="$(QLA.dest)" \
+                --with-qio="$(QIO.dest)" \
+                --with-qmp="$(QMP.dest)" \
+                --prefix="$(QOPQDP.dest)"
+
+QLUA.libs   = z
+QLUA.cc     = $(XCC)
+QLUA.fc     = $(XFC)
+QLUA.ld     = $(XFC)
+QLUA.cflags = $(XCFLAGS)
+QLUA.config = --with-lua="$(LUA.dest)" \
+              --with-qdp="$(QDP.dest)" \
+              --with-lhpc-aff="$(AFF.dest)" \
+              --with-hdf5="$(HDF5.dest)" \
+              --with-qopqdp="$(QOPQDP.dest)" \
+              --with-arpack="-L"$(LAPACK.dest)/lib" -L"$(ARPACK.dest)/lib" -llapack -lparpack -llapack -larpack" \
+              --with-mdwf="$(MDWF.dest)" \
+              --with-clover="$(CLOVER.dest)" \
+              --clover-nc=$(XCLOVER_NC) \
+              --with-twisted="$(TWISTED.dest)" \
+              --twisted-nc=$(XTWISTED_NC) \
+              --with-gsl="$(GSL.dest)" \
+              --with-nc=N \
+              --with-nc=3 \
+              --with-extras \
+              --prefix="$(QLUA.dest)"

@@ -1,0 +1,8 @@
+(include "types.qa0")
+
+(procedure put-c-AB-Inverse ([stem "put_cABiTableZ"])
+           ([ab-i-table  pointer "iabtable"   "struct ABiTable *" ]
+            [z-val-re    double  "z_val_re"   "double"            ]
+            [z-val-im    double  "z_val_im"   "double"            ])
+   (store double () ([reg ab-i-table] [const (offset-of c-AB-Inverse z-re)]) [reg z-val-re])
+   (store double () ([reg ab-i-table] [const (offset-of c-AB-Inverse z-im)]) [reg z-val-im]))

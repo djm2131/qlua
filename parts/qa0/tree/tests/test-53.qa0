@@ -1,0 +1,9 @@
+(procedure test-op ([stem "xx"] count-flops)
+       ([res pointer "r" "double *"]
+        [cl pointer "cl" "struct Clover *"]
+        [f pointer "f" "struct Fermion *"])
+   (load qcd-clover () $cl ([reg cl]))
+   (load qcd-fermion () $f ([reg f]))
+   (op qcd-mul-clover () (v) ([reg $cl] [reg $f]))
+   (store qcd-fermion () ([reg res]) [reg v]))
+

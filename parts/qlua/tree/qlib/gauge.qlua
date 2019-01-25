@@ -1,0 +1,231 @@
+require("stdlib")
+
+-- naive topological charge density
+
+function gauge_topcharge_naive(U)
+  assert(#U == 4, "only 4-d lattice is supported")
+  local function clovF(i,j)
+    local Ujp = U[j]:shift(i - 1, "from_forward")
+    local Uipx = U[i]:shift(j - 1, "from_forward"):adjoin()
+    local Sl = U[j]:adjoin() * U[i] * Ujp
+    local C01 = Sl * Uipx  -- at (0,1)
+    local C11 = Uipx * Sl  -- at (1,1)
+    local Su = Ujp * Uipx * U[j]:adjoin()
+    local C00 = U[i] * Su -- at (0,0)
+    local C10 = Su * U[i] -- at (1,0)
+    local F = C00 +
+              C01:shift(j - 1, "to_forward") +
+              (C10 + C11:shift(j - 1, "to_forward")):shift(i - 1, "to_forward")
+    return (F - F:adjoin()) / complex(0,8)
+  end
+  return 8 / U[1]:colors() * (clovF(1,2) * clovF(3,4) +
+                              clovF(1,3) * clovF(4,2) +
+                              clovF(1,4) * clovF(2,3)):trace():real()
+end
+
+function naive_q(U)
+  printf("WARNING: 'naive_' has been renamed 'gauge_topcharge_naive'\n")
+  return gauge_topcharge_naive(U)
+end
+-- project a matrix to SU(n)
+function toSUn(X)
+   local ScaledOne = X.lattice:ColorMatrix(complex(1.0/X:colors(), 0))
+   local ahX = (X - X:adjoin()) / 2
+   local algX = ahX - ScaledOne * ahX:trace()
+   return algX:exp()
+end
+
+-- gauge transformations
+function gauge_transform_U(g, U)
+   local V = {}
+   for i = 1, #U do
+      V[i] = g * U[i] * g:shift(i - 1, "from_forward"):adjoin()
+   end
+   return V
+end
+-- gauge transformation of one-dim gauge link
+--    g         gauge transformation
+--    U         gauge link
+--    mu        = 0 .. (Nd-1) direction of the gauge link U
+function gauge_transform_U_dir(g, U, mu)
+  return g * U * g:shift(mu, "from_forward"):adjoin()
+end
+
+function gauge_transform_D(g, F)
+  return g * F
+end
+
+function gauge_transform_P(g, P)
+  return g * P * g:adjoin()
+end
+function gauge_copy(g)
+  local Nd = #g
+  local res_g = {}
+  for mu = 0, Nd - 1 do
+    res_g[1+mu] = g[1+mu]:copy()
+  end
+  return res_g
+end
+function gauge_apply_boundary(g, bc)
+  -- apply boundary conditions to the gauge field "in-place"
+  local Nd = #g
+  if Nd <= 0 then return {} end
+  local L = g[1].lattice
+  for mu = 0, Nd - 1 do 
+    L:Subset({axis=mu, position=L[mu]-1}):where(function() 
+        g[1+mu]:set(bc[1+mu] * g[1+mu]) end)
+  end
+end
+
+
+-- compute ij plaquette on each lattice site, i,j=0..(dim-1)
+function gauge_plaquette(U,i,j)
+   return U[i+1] *
+          U[j+1]:shift(i, "from_forward") *
+          U[i+1]:shift(j, "from_forward"):adjoin() *
+          U[j+1]:adjoin()
+end
+function plaquette(U,i,j)
+  printf("WARNING: 'plaquette' has been renamed 'gauge_plaquette'\n")
+  return gauge_plaquette(U,i,j)
+end
+function gauge_plaquette_all(U)
+  local L = U[1].lattice
+  assert(#L == #U)
+  local res = {}
+  for i = 0, #L - 1 do
+    res[1+i] = {}
+    res[1+i][1+i] = L:ColorMatrix(1.)
+    for j = 0, i - 1 do
+      res[1+i][1+j] = gauge_plaquette(U, i, j)
+      res[1+j][1+i] = res[1+i][1+j]:conj()
+    end
+  end
+  return res
+end
+function plaquette_all(U)
+  printf("WARNING: 'plaquette_all' has been renamed 'gauge_plaquette_all'\n")
+  return gauge_plaquette_all(U)
+end
+
+function gauge_u1_plaquette(U,i,j)
+   return U[i+1] *
+          U[j+1]:shift(i, "from_forward") *
+          U[i+1]:shift(j, "from_forward"):conj() *
+          U[j+1]:conj()
+end
+function gauge_u1_plaquette_all(U)
+  local L = U[1].lattice
+  assert(#L == #U)
+  local res = {}
+  for i = 0, #L - 1 do
+    res[1+i] = {}
+    res[1+i][1+i] = L:ColorMatrix(1.)
+    for j = 0, i - 1 do
+      res[1+i][1+j] = gauge_u1_plaquette(U, i, j)
+      res[1+j][1+i] = res[1+i][1+j]:conj()
+    end
+  end
+  return res
+end
+
+-- compute clover term in (i,j) plane, i,j=0..(dim-1)
+function gauge_clover(U, i, j)
+  local Ujp   = U[1+j]:shift(i, "from_forward")
+  local Uipx  = U[1+i]:shift(j, "from_forward"):adjoin()
+  local Sl    = U[1+j]:adjoin() * U[1+i] * Ujp
+  local C01   = Sl * Uipx  -- at (0,1)
+  local C11   = Uipx * Sl  -- at (1,1)
+  local Su    = Ujp * Uipx * U[1+j]:adjoin()
+  local C00   = U[1+i] * Su -- at (0,0)
+  local C10   = Su * U[1+i] -- at (1,0)
+  local F = C00 +
+            C01:shift(j, "to_forward") +
+            (C10 + C11:shift(j, "to_forward")):shift(i, "to_forward")
+  return (F - F:adjoin()) / complex(0,8)
+end
+function clover_term(U, i, j)
+  printf("WARNING: 'clover_term' has been renamed 'gauge_clover'\n")
+  return gauge_clover(U, i, j)
+end
+function gauge_clover_all(U)
+  local L = U[1].lattice
+  assert(#L == #U)
+  local res = {}
+  for i = 0, #L - 1 do
+    res[1+i] = {}
+    res[1+i][1+i] = L:ColorMatrix()
+    for j = 0, i - 1 do
+      res[1+i][1+j] = gauge_clover(U, i, j)
+      res[1+j][1+i] = -res[1+i][1+j]
+    end
+  end
+  return res
+end
+function clover_term_all(U)
+  printf("WARNING: 'clover_term_all' has been renamed 'gauge_clover_all'\n")
+  return gauge_clover_all(U)
+end
+
+function gauge_u1_clover(U, i, j)
+  local Ujp   = U[1+j]:shift(i, "from_forward")
+  local Uipx  = U[1+i]:shift(j, "from_forward"):conj()
+  local Sl    = U[1+j]:conj() * U[1+i] * Ujp
+  local C01   = Sl * Uipx  -- at (0,1)
+  local C11   = Uipx * Sl  -- at (1,1)
+  local Su    = Ujp * Uipx * U[1+j]:conj()
+  local C00   = U[1+i] * Su -- at (0,0)
+  local C10   = Su * U[1+i] -- at (1,0)
+  local F = C00 +
+            C01:shift(j, "to_forward") +
+            (C10 + C11:shift(j, "to_forward")):shift(i, "to_forward")
+  return (F - F:conj()) / complex(0,8)
+end
+function gauge_u1_clover_all(U)
+  local L = U[1].lattice
+  assert(#L == #U)
+  local res = {}
+  for i = 0, #L - 1 do
+    res[1+i] = {}
+    res[1+i][1+i] = L:ColorMatrix()
+    for j = 0, i - 1 do
+      res[1+i][1+j] = gauge_u1_clover(U, i, j)
+      res[1+j][1+i] = -res[1+i][1+j]
+    end
+  end
+  return res
+end
+
+-- sns: TODO add UTEST's from qlua-tests/gauge-const-field
+function gauge_u1_const_field(L, nflux_munu)
+  -- create U(1) field with constant strength of nflux_munu quanta:
+  -- plaquette U_p[mu][nu] = exp(i*nflux[1+mu][1+nu]*2*Pi/(L[mu]*L[nu]))
+  -- only the U(pper) part of nflux_munu[mu][nu] is used (mu < nu)
+  local u1  = {}
+  for mu = 0, #L-1 do u1[1+mu] = L:Complex(1.) end
+  for mu = 0, #L-2 do
+    for nu = mu + 1, #L-1 do
+      local q_ph  = 2. * math.pi / (L[mu] * L[nu])   -- flux quantum
+      local ph1   =  q_ph * nflux_munu[1+mu][1+nu] * L:Real(L:pcoord(mu))
+      local ph2   = -q_ph * nflux_munu[1+mu][1+nu] * L:Real(L:pcoord(nu)) * L[mu]
+      u1[1+nu]    = u1[1+nu] * L:Complex(ph1:cos(), ph1:sin())
+      L:Subset({axis=mu, position=L[mu]-1}):where(function()
+            u1[1+mu]:set(u1[1+mu] * L:Complex(ph2:cos(), ph2:sin()))
+          end)
+    end
+  end
+  return u1
+end
+function gauge_u1_const_field_munu(L, nflux, mu, nu)
+  -- create U(1) mu,nu field components with constant strength of nflux quanta:
+  -- plaquette U_p[mu][nu] = exp(i*nflux*2*Pi/(L[mu]*L[nu]))
+  local q_ph  = 2. * math.pi / (L[mu] * L[nu])   -- flux quantum
+  local ph1   =  q_ph * nflux * L:Real(L:pcoord(mu))
+  local ph2   = -q_ph * nflux * L:Real(L:pcoord(nu)) * L[mu]
+  local u1_nu = L:Complex(ph1:cos(), ph1:sin())
+  local u1_mu = L:Complex(1.)
+  L:Subset({axis=mu, position=L[mu]-1}):where(function()
+        u1_mu:set(L:Complex(ph2:cos(), ph2:sin()))
+      end)
+  return u1_mu, u1_nu
+end

@@ -1,0 +1,31 @@
+;; Check scalef & Co.
+(procedure scale ([stem "scale"] count-flops)
+                 ([r     pointer   "r"     "void *"]
+                  [a     double    "a"     "double"]
+                  [b     pointer   "b"     "void *"])
+   (load qcd-fermion () v ([reg b]))
+   (op qcd-scalef () (v-r) ([reg a] [reg v]))
+   (store qcd-fermion () ([reg r]) [reg v-r]))
+
+
+(procedure Cscale ([stem "Cscale"] count-flops)
+                  ([r   pointer "r" "void *"]
+                   [a   pointer "a" "const void *"]
+                   [b   pointer "b" "const void *"])
+   (load qcd-fermion () v ([reg b]))
+   (load REAL () a-re ([reg a]))
+   (load REAL () a-im ([reg a] [const (size-of REAL)]))
+   (op complex () (a-v) ([reg a-re] [reg a-im]))
+   (op qcd-complex-scalef () (v-r) ([reg a-v] [reg v]))
+   (store qcd-fermion () ([reg r]) [reg v-r]))
+
+(procedure CCscale ([stem "CCscale"] count-flops)
+                   ([r   pointer "r" "void *"]
+                    [a   pointer "a" "const void *"]
+                    [b   pointer "b" "const void *"])
+   (load qcd-fermion () v ([reg b]))
+   (load REAL () a-re ([reg a]))
+   (load REAL () a-im ([reg a] [const (size-of REAL)]))
+   (op complex () (a-v) ([reg a-re] [reg a-im]))
+   (op qcd-complex-conj-scalef () (v-r) ([reg a-v] [reg v]))
+   (store qcd-fermion () ([reg r]) [reg v-r]))

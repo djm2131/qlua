@@ -1,0 +1,80 @@
+-- regular assoc
+
+haktor:working % ./qa0 cee double x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+haktor:working % time ./qa0 cee double x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+
+real    0m12.274s
+user    0m11.426s
+sys     0m0.105s
+
+-- fmap, structure fmap-compare
+haktor:working % ./qa0 cee double x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+haktor:working % time ./qa0 cee double x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+
+real    0m21.430s
+user    0m19.092s
+sys     0m0.315s
+
+(77% - relocate)
+
+-- fmap with strings
+haktor:working % ./qa0 cee double x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+haktor:working % time ./qa0 cee double x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+
+real    0m6.693s
+user    0m5.888s
+sys     0m0.131s
+
+-- fmap/strings/ndebug
+haktor:working % ./qa0 cee double x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+haktor:working % time ./qa0 cee double x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+
+real    0m5.829s
+user    0m5.317s
+sys     0m0.104s
+
+
+-- fmap/string/petite
+(time (driver "cee" "double" "y.c" "../chez-test/qa0/do-AxpBxFx.qa0"))
+(time (driver "cee" ...))
+    210 collections
+    3650 ms elapsed cpu time, including 126 ms collecting
+    4070 ms elapsed real time, including 130 ms collecting
+    224542824 bytes allocated, including 225858952 bytes reclaimed
+#t
+> 
+
+-- fmap/strings/format/ndebug
+haktor:working % ./qa0 cee float x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+haktor:working % time ./qa0 cee float x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+
+real    0m1.656s
+user    0m1.505s
+sys     0m0.051s
+
+-- fmap/string/format/petite
+(time (driver "cee" "float" "x.c" "../chez-test/qa0/do-AxpBxFx.qa0"))
+(time (driver "cee" ...))
+    107 collections
+    1760 ms elapsed cpu time, including 53 ms collecting
+    1792 ms elapsed real time, including 53 ms collecting
+    114447136 bytes allocated, including 114089920 bytes reclaimed
+#t
+
+-- fmap/string/format/printf/petite
+> (driver "cee" "float" "x.c" "../chez-test/qa0/do-AxpBxFx.qa0")
+> (time (driver "cee" "float" "x.c" "../chez-test/qa0/do-AxpBxFx.qa0"))
+(time (driver "cee" ...))
+    117 collections
+    1901 ms elapsed cpu time, including 60 ms collecting
+    2006 ms elapsed real time, including 60 ms collecting
+    124744488 bytes allocated, including 124716704 bytes reclaimed
+#t
+
+-- fmap/strings/format/printf/ndebug
+haktor:working % ./qa0 cee float x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+haktor:working % time ./qa0 cee float x.c ../chez-test/qa0/do-AxpBxFx.qa0 
+
+real    0m1.966s
+user    0m1.666s
+sys     0m0.053s

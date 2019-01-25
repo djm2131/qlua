@@ -1,0 +1,54 @@
+#!/bin/sh -f
+
+if [ $# -ne 1 ]; then
+   echo "test-AFF lhpc-aff"
+   exit 1
+fi
+
+AFF=$1
+
+exec 2>&1
+
+echo '***** TEST AFF utility and the file system *********'
+echo 'USER '$USER
+echo 'HOST '`hostname`
+echo 'DATE '`date`
+echo 'DIR  '`pwd`
+echo 'AFF  '$AFF
+
+time_all() {
+  echo '***** Timing on file ' $1
+  echo '*** file stat'
+  ls -l $1
+  echo '*** data nodes'
+  $AFF ls -R $1  | grep complex | grep '^/' | wc -l
+  echo '*** checking time'
+  time -p $AFF check $1 > /dev/null
+  echo '*** load time'
+  time -p $AFF ls $1 > /dev/null
+}
+
+echo '***** AFF version'
+$AFF version
+
+echo '***** CREATE 64 complex data points'
+seq 1 128 | $AFF import -x -N 64 -o data.aff -e /data
+
+echo '***** CONSTRUCT model data description'
+ ./mk-model data.aff | sort -u > model.templ
+
+echo '***** BUILD MODEL DATA'
+time -p $AFF insert -o data-conf.aff -f model.templ 
+
+time_all data-conf.aff
+
+in=data-conf.aff
+for n in `seq 1 10`; do
+   echo '***** DOUBLING data size'
+   out=data-$n.aff
+   time -p $AFF insert -o $out \
+            /p1 $in / \
+            /p2 $in /
+   time_all $out
+   in=$out
+done

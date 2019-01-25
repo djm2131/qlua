@@ -1,0 +1,26 @@
+(name-infix "clover")
+
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "#include <complex.h>"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "#include \"clover.h\""])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct Fermion;"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct FermionD;"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct FermionF;"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct ProjectedFermion;"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct SUn;"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct CloverX;"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct neighbor;"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct down_pack;"])
+(verbose [(cee-32 cee-64 c99-32 c99-64 bgq/xlc) "struct up_pack;"])
+
+(structure down-pack "down_pack" ([fermion "fermion" int]))
+
+(structure up-pack   "up_pack"   ([fermion "fermion" int]
+                                  [gauge   "gauge"   int]))
+
+(array d-vector "x_vector" int (const *dim*))
+
+(structure neighbor  "neighbor"  ([mask     "mask"    int      ]
+                                  [up-u     "up_u"    int      ]
+                                  [up-f     "up_f"    d-vector ]
+                                  [down-f   "down_f"  d-vector ]
+                                  [down-u   "down_u"  d-vector ]))

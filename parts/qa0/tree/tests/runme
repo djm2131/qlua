@@ -1,0 +1,19 @@
+#!/bin/sh -fe
+qa0=../bootstrap/qa0
+archs='header cee-32 cee-64 c99-32 c99-64 dry bgq/xlc'
+
+
+for arch in $archs; do
+  for p in double float; do
+    echo '****** Building '$arch' in '$p' precision'
+    for f in `ls . | grep test.*qa0`; do
+       echo $f
+       $qa0 $arch $p x.c $f
+       if [ $? -ne 0 ] ; then
+          echo '**** FAILED AT '$arch $p $f
+          exit 1
+       fi
+    done
+  done
+done
+rm -f x.c

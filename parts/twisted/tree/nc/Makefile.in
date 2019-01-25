@@ -1,0 +1,46 @@
+# makefile template
+
+NC=|:Nc:|
+LIMPDIR = @limpdir@
+BINDIR  = @bindir@
+INCDIR  = @incdir@
+LIBDIR  = @libdir@
+DOCDIR  = @docdir@
+V=0
+
+ifeq ("$V", "0")
+   E=@echo "  "
+   C=@
+else
+   E=@echo > /dev/null
+   C=
+endif
+
+docs=AUTHORS COPYRIGHT README config.log doc/twisted|:Nc:|.pdf
+
+.PHONY: all clean realclean install
+
+all:
+	$(MAKE) V=$V -C $(LIMPDIR) CONFIG=../target NC=|:Nc:| all
+
+clean:
+	$(MAKE) V=$V -C $(LIMPDIR) CONFIG=../target NC=|:Nc:| clean
+
+realclean: clean
+	$(RM) */lib*.a
+
+install: all twisted-config
+	$E INSTALLING to $(DESTDIR)`dirname $(LIBDIR)`
+	$C [ -d $(DESTDIR)$(BINDIR) ] || mkdir -p $(DESTDIR)$(BINDIR)
+	$C cp  twisted-config $(DESTDIR)$(BINDIR)/$(NC:%=twisted-config-%)
+	$C [ -d $(DESTDIR)$(LIBDIR) ] || mkdir -p $(DESTDIR)$(LIBDIR)
+	$C cp $(LIMPDIR)/libqop-twisted.a $(DESTDIR)$(LIBDIR)/$(NC:%=libqop-twisted%.a)
+	$C [ -d $(DESTDIR)$(INCDIR) ] || mkdir -p $(DESTDIR)$(INCDIR)
+	$C cp $(LIMPDIR)/qop-twisted.h $(DESTDIR)$(INCDIR)/$(NC:%=qop-twisted%.h)
+	$E ALL DONE
+
+install-doc:
+	$C [ -d $(DESTDIR)$(DOCDIR) ] || mkdir -p $(DESTDIR)$(DOCDIR)
+	$C for f in $(docs) ; do \
+	  cp $$f $(DESTDIR)$(DOCDIR)/`basename $$f`; \
+	done

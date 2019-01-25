@@ -1,0 +1,6 @@
+(procedure X-cmul ([stem "X"] count-flops)
+           ([dst  pointer   "dst"      "void *"]
+            [src  pointer   "src"      "void *"])
+   (load COMPLEX () x ([reg src]))
+   (op complex-mul () (y) ([reg x] [reg x]))
+   (store COMPLEX () ([reg dst]) [reg y]))

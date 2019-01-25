@@ -1,0 +1,76 @@
+d = 4
+LAT = qcd.lattice({d,d})
+rnd = LAT:RandomState(1, LAT:pcoord(0) * d +
+                         LAT:pcoord(1))
+
+crnd = rnd:gaussian_Complex()
+rr = rnd:gaussian_Real()
+v0 = rnd:gaussian_ColorVector()
+v1 = rnd:gaussian_ColorVector()
+
+-- x0 = LAT:ColorMatrix()
+
+x0 = rnd:gaussian_ColorMatrix()
+print("x0=", x0)
+
+x1 = LAT:ColorMatrix(2.0)
+print("x1=", x1)
+
+x2 = LAT:ColorMatrix(complex(3,4))
+print("x2=", x2)
+
+x3 = LAT:ColorMatrix(crnd, {a=1, b=2})
+print("x3=", x3)
+
+x4 = LAT:ColorMatrix(v0, {b=1})
+print("x4=", x4)
+
+x5 = LAT:ColorMatrix(v1, v0)
+print("x5=", x5)
+
+x6 = rnd:gaussian_ColorMatrix()
+print("x6=", x6)
+
+w0 = x5[{b=2}]
+cc = x6[{b=1,a=0}]
+x5[{a=0,b=0}] = qcd.dot(w0, v1)
+
+print("element: " .. tostring(x5[{1,2,a=0,b=1}]))
+
+yy = rr * crnd * x0 +
+    x1 * x2:transpose() + 
+    x3:adjoin() * x4 * x5:conj() * crnd * rr
+
+print("trace: " .. tostring(yy:trace():sum()))
+
+-- x9 = (x0 - x0:adjoin())
+-- x9 = LAT:ColorMatrix(1)
+x9 = yy - yy:adjoin()
+ey = x9:exp()
+yey = ey * ey:adjoin()
+u = yey:trace()
+
+for x = 0, LAT[0] - 1 do
+  for y = 0, LAT[1] - 1 do
+    print(x, y, u[{x,y}])
+  end
+end
+
+print()
+
+z1 = complex(1,1)
+
+nc = yey:colors()
+for x = 0, LAT[0] - 1 do
+  for y = 0, LAT[1] - 1 do
+    for i = 0, nc - 1 do
+      for j = 0, nc - 1 do
+         print(x, y, i, j, z1 + yey[{x,y,a=i,b=j}] - z1)
+      end
+    end
+  end
+end
+
+
+
+print("--------------- done ------------")

@@ -1,0 +1,28 @@
+(include "types.qa0")
+
+;; F memory order:
+;;   0th index: lattice index
+;;   1st index: vector of fermions
+;;  fv[0][0]
+;;  fv[1][0]
+;;  ....
+;;  fv[size-1][0]
+;;  ::::: stride slack
+;;  fv[0][1]
+;;  ....
+;;
+(procedure put-vfermion ([stem "vf_put"]
+                         prec&color
+                         count-flops)
+           ([size      int     "size"      "size_t"                  ]
+            [F         pointer "F"         "struct vFermion *"       ]
+            [fv-stride int     "fv_stride" "size_t"                  ]
+            [fv-idx    int     "fv_idx"    "size_t"                  ]
+            [X         pointer "X"         "const struct FermionX *" ])
+   (op int-mul () (f-offset) ([reg fv-idx] [reg fv-stride]))
+   (op pointer-add () (F) ([reg F] [reg f-offset]))
+   (loop () (i [const 0] [reg size])
+     (load qcd-fermion () x-v ([reg X]))
+     (op pointer-add () (X) ([reg X] [const (size-of Fermion)]))
+     (store qcd-fermion () ([reg F]) [reg x-v])
+     (op pointer-add () (F) ([reg F] [const (size-of Fermion)]))))

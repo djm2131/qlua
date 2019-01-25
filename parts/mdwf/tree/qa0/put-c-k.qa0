@@ -1,0 +1,13 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+
+(procedure put-c-K-Table ([stem "put_cKTable"])
+           ([k-table   pointer "ktable"    "struct KTable *"  ]
+            [index     int     "p"         "size_t"           ]
+            [k-val-re  double  "k_val_re"  "double"           ]
+            [k-val-im  double  "k_val_im"  "double"           ])
+   (op int-mul () (x) ([reg index] [const (size-of c-K-Table)]))
+   (op pointer-add () (ptr) ([reg k-table] [reg x]))
+   (store double () ([reg ptr] [const (offset-of c-K-Table k-re)]) [reg k-val-re])
+   (store double () ([reg ptr] [const (offset-of c-K-Table k-im)]) [reg k-val-im]))

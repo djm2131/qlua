@@ -1,0 +1,2 @@
+The files implement low-level operations of CLOVER.
+This variant does not read or write data at all in any operation.

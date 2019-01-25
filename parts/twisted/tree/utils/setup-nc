@@ -1,0 +1,25 @@
+#!/bin/sh -f
+
+Ver="XXX"
+
+if [ $# -ne 1 ] ; then
+   echo "Usage: setup-nc Nc" 1>&2
+   exit 1
+fi
+
+Nc="$1"
+
+setup_nc () {
+  in="$1"
+  outd="$2"
+  sed < nc/$in > $outd/$in \
+   -e "s/|:Nc:|/$Nc/g;s/|:Version:|/$Ver/g"
+}
+
+setup_nc version.c port
+setup_nc twisted.h port
+setup_nc twisted-config.in .
+setup_nc Makefile.in .
+setup_nc configure .
+chmod +x ./configure
+cp nc/qop-twisted$Nc.h port/qop-twisted.h

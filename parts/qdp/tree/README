@@ -1,0 +1,25 @@
+SciDAC QDP C interface -- Level 2 data parallel routines
+
+This package uses the standard GNU configuration script.  See the file
+INSTALL for datails on compiling and installing.
+
+Documentation is included in the doc directory.  Gnu info files are
+automatically built with the rest of the library.  Postscript, pdf and
+html versions can be made with "make ps", "make pdf" and "make html".
+
+Contents of directories:
+
+  bin			Contains qdp-config script
+  doc			Documentation
+  examples		Example programs using QDP
+  include		Header files, some of these will be generated
+  lib/generate		Scripts for creating the library source
+  lib/optimized		A few modified routines for optimization
+  lib/qdp_common	Sources for common library
+  lib/qdp_*		Contains makefile for each library
+
+
+Bugs and suggestions:
+James Osborn
+Boston University
+josborn at physics.bu.edu

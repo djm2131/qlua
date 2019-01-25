@@ -1,0 +1,25 @@
+;;; compute r = K^* x, complex case
+
+(include "types.qa0")
+(include "defs-K.qa0")
+
+(procedure do-c-K ([stem "doc_Kx"]
+                   prec&color
+                   count-flops)
+       ([res-x     pointer   "res_x"     "struct Fermion *"         ]
+        [start     int       "start"     "size_t"                   ]
+        [size      int       "size"      "size_t"                   ]
+        [l-s       int       "Ls"        "size_t"                   ]
+        [k-table   pointer   "k_table"   "const struct KTable *"    ]
+        [src-x     pointer   "src_x"     "const struct Fermion *"   ])
+  (op int-mul () (s-f-line) ([reg l-s] [const (size-of Fermion)]))
+  (op int-mul () (start*ls) ([reg start] [reg l-s]))
+  (op int-mul () (offset-x) ([reg start*ls] [const (size-of Fermion)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg offset-x]))
+  (op pointer-add () (src-x) ([reg src-x] [reg offset-x]))
+  (loop () (i [const 0] [reg size])
+    (macro S-compute-complex-K-conj [reg res-x]
+                                    [reg l-s]
+                                    [reg k-table] [reg src-x])
+    (op pointer-add () (res-x) ([reg res-x] [reg s-f-line]))
+    (op pointer-add () (src-x) ([reg src-x] [reg s-f-line]))))

@@ -1,0 +1,5 @@
+# vim: syn=sh
+$RUN ls 	${TEST_DIR}/test.aff >/dev/null || exit 1
+$RUN ls -l 	${TEST_DIR}/test.aff >/dev/null || exit 1
+$RUN ls -R 	${TEST_DIR}/test.aff >/dev/null || exit 1
+$RUN ls -lR 	${TEST_DIR}/test.aff >/dev/null || exit 1

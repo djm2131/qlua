@@ -1,0 +1,65 @@
+#!/bin/sh -f
+#
+# 2007/09/11 avp -- funal cut for v 1.0.0
+cc='@CC@'
+cflags='@CFLAGS@ -I@prefix_include@'
+libs='@LIBS@ -llhpc-aff'
+ldflags='@LDFLAGS@ -L@prefix_lib@'
+version='XXX LHPC AFF v.2.1.0x $Id$'
+
+help() {
+  cat << EOF
+Usage: aff-config [OPTION]
+Options:
+   --help       print this help
+   --cc         print the C compiler required
+   --cflags     print CC flags needed
+   --libs       print provided libraries 
+   --ldflags    print linking flags
+   --version    print AFF version
+EOF
+}
+
+normalize() {
+  i=''
+  for input ; do
+     case $i in
+       *\ $input\ *) ;;
+       *) i="$i $input"
+          ;;
+     esac
+  done
+  echo $i
+}
+
+if [ $# -eq 0 ] ; then
+   help 1>&2
+   exit 1
+fi
+
+for option ; do
+   case "$option" in
+     --help)
+         help
+         ;;
+     --cc)
+         echo $cc
+         ;;
+     --cflags)
+         normalize $cflags
+         ;;
+     --libs)
+         normalize $libs
+         ;;
+     --ldflags)
+         normalize $ldflags
+         ;;
+     --version)
+         echo $version
+         ;;
+     *)
+         echo "Unknown option $option"
+         exit 1
+         ;;
+   esac 
+done

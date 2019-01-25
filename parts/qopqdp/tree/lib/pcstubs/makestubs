@@ -1,0 +1,42 @@
+#!/bin/sh
+
+makestub() {
+  fn=$1
+  p=$2
+  c=$3
+  nc=$4
+  of=`echo $1 |sed 's/_p.c/_'$p$c'.c/'`
+  if [ ! -f $of ]; then
+    P=`echo $p |tr 'a-z' 'A-Z'`
+    C=$c
+    if [ $c = n ]; then
+      C=\'N\'
+      REM='//'
+    fi
+    cat <<EOF >$of
+#define QOP_Precision '$P'
+#define QOP_Colors $C
+${REM}#define QOP_Nc $nc
+#define QDP_Precision '$P'
+#define QDP_Colors $C
+${REM}#define QDP_Nc $nc
+#define QLA_Precision '$P'
+#define QLA_Colors $C
+${REM}#define QLA_Nc $nc
+
+#include "$fn"
+EOF
+  fi
+}
+
+for f in "$@"; do
+  b=`basename $f`
+  makestub $b f 1 1
+  makestub $b d 1 1
+  makestub $b f 2 2
+  makestub $b d 2 2
+  makestub $b f 3 3
+  makestub $b d 3 3
+  makestub $b f n
+  makestub $b d n
+done

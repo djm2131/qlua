@@ -1,0 +1,3 @@
+bundled LAPACK and BLAS will be rolled into libarpack
+to unbundle, set SKIP_LAPACK=1 SKIP_BLAS=1  in make cmdline
+	use LAPACKLIB, BLASLIB vars to link to ext.libraries

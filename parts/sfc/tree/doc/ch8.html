@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>8. Writing primitives in C</title>
+<style type="text/css">
+body { color: #333333; margin-top: 4pc; margin-left: 10pc; }
+#menu { display: block; top: 3pc; left: 45pc; width: 15pc; position: fixed; border: 0; padding: 0; text-align: left; }
+* html #menu { position: absolute; }
+#menu p { font-size: 9pt; line-height: 14pt; margin: 0; padding: 0;  }
+#menu p.tt { font-size: 11pt; line-height: 14pt; margin: 0; padding: 0;  }
+a:visited, a { text-decoration: none; color: #1D5CA5; }
+a:hover { text-decoration: underline; color: #1D5CA5; }
+body, p, h1, h2, h3, h4, abbr, var, q { font-family: Georgia, "Times New Roman"; font-size: 10pt; }
+tt, code, pre, p.tt { font-family: Consolas, "Courier New"; font-size: 11pt; }
+abbr, var { font-style: italic; }
+q { font-style: italic; text-decoration: none; }
+pre { margin-top: 1.5ex; margin-bottom: 0; }
+p { line-height: 3ex; font-size: 10pt; margin-top: 1.5ex; margin-bottom: 0; padding: 0; text-align: justify; }
+p.note { font-size: 9pt; }
+p.note tt, code, pre { font-size: 10.5pt; }
+h1 { margin-top: 0; margin-bottom: 0; font-size: 17pt; border-top: 1.5ex solid white; }
+h2 { margin-top: 0; margin-bottom: 0; font-size: 13pt; border-top: 3ex solid white; }
+h3 { margin-top: 0; margin-bottom: 0; font-size: 11pt; border-top: 3ex solid white; }
+h4 { margin-top: 0; margin-bottom: 0; font-size: 10pt; border-top: 1.5ex solid white; }
+table.proto { margin-top: 0; margin-bottom: 0; border: 0; border-spacing: 0; padding: 0; border-top: 3ex solid white;}
+table.proto td { font-size: 10pt; line-height: 3ex; }
+</style>
+<!--[if lte IE 6]>
+   <style type="text/css">
+   /*<![CDATA[*/ 
+html { overflow-x: auto; overflow-y: hidden; }
+   /*]]>*/
+   </style>
+<![endif]-->
+</head>
+<body>
+
+<div id="menu">
+<p>7.&nbsp;&nbsp;<a href="ch7.html">Runtime system</a></p>
+<p>8.&nbsp;&nbsp;<a href="#">Writing primitives in C</a></p>
+<p>8.1.&nbsp;&nbsp;<a href="#8.1.">Inline C expressions</a></p>
+<p><a href="ioe.html">INDEX OF ENTRIES</a></p>
+<p style="margin-top: 1ex; font-variant: small-caps">&lsaquo; <a href="toc.html">full table of contents</a> &rsaquo;</p>
+<p>&nbsp;</p>
+<p><tt>%prim</tt>&nbsp;&nbsp;&nbsp;<a href="#prim">8.1.</a></p>
+<p><tt>%prim*</tt>&nbsp;&nbsp;&nbsp;<a href="#prim">8.1.</a></p>
+<p><tt>%prim?</tt>&nbsp;&nbsp;&nbsp;<a href="#prim">8.1.</a></p>
+<p><tt>%prim!</tt>&nbsp;&nbsp;&nbsp;<a href="#prim">8.1.</a></p>
+<p><tt>%prim?!</tt>&nbsp;&nbsp;&nbsp;<a href="#prim">8.1.</a></p>
+<p><tt>%prim*?</tt>&nbsp;&nbsp;&nbsp;<a href="#prim">8.1.</a></p>
+<p><tt>%prim*!</tt>&nbsp;&nbsp;&nbsp;<a href="#prim">8.1.</a></p>
+<p><tt>%prim*?!</tt>&nbsp;&nbsp;&nbsp;<a href="#prim">8.1.</a></p>
+<p style="margin-top: 1ex; font-variant: small-caps">&lsaquo; <a href="ioe.html">full index</a> &rsaquo;</p>
+</div>
+
+<div style="width: 30pc;">
+
+
+<a id="8."></a><h1>8.&nbsp;&nbsp;&nbsp;&nbsp;Writing primitives in C</h1>
+
+<p>The #F compiler can be seen as a macroassembler which pieces together and
+interconnects fragments of C code. These fragments originate as <em>inline C
+expressions</em> in #F code, in the same way some C compilers allow embedding
+fragments of assembly code. While inline C expressions can appear anywhere
+a regular expression appears, they usually are confined to library code. In
+this regard</p>
+
+<a id="8.1."></a><h2>8.1.&nbsp;&nbsp;&nbsp;&nbsp;Inline C expressions</h2>
+
+<p>An inline C expressions consists of a keyword identifying the expression, 
+followed by a <em>code template</em> and zero or more argument expressions. 
+Keywords encode the information of side effects and allocation performed
+by the code in the template, allowing the compiler to classify the resulting
+expressions for code optimization phases.
+</p>
+
+<a id="prim"></a>
+<table class="proto" width="100%" cellpadding="0" cellspacing="0">
+<tr><td><code>(%prim <abbr>code</abbr> <abbr>expression<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+<tr><td><code>(%prim* <abbr>code</abbr> <abbr>expression<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+<tr><td><code>(%prim? <abbr>code</abbr> <abbr>expression<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+<tr><td><code>(%prim! <abbr>code</abbr> <abbr>expression<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+<tr><td><code>(%prim?! <abbr>code</abbr> <abbr>expression<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+<tr><td><code>(%prim*? <abbr>code</abbr> <abbr>expression<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+<tr><td><code>(%prim*! <abbr>code</abbr> <abbr>expression<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+<tr><td><code>(%prim*?! <abbr>code</abbr> <abbr>expression<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+</table>
+
+<p>A code template is either a literal string enclosed in double quotes or a
+parenthesized sequence of code templates. A parenthesized sequence is equivalent
+to a string obtained by the concatenation of its content strings; it is supported
+to simplify generation of primitive forms by macroexpansion.
+</p>
+
+<p>Keywords of inline C expressions encode a combination of three properties:</p>
+
+<table style="margin-left: 1pc; margin-top: 2ex;" cellpadding="2ex;">
+<tr><td><tt>*</tt></td><td>allocates from garbage-collectible heap</td></tr>
+<tr><td><tt>!</tt></td><td>has side effects other than allocation</td></tr>
+<tr><td><tt>?</tt></td><td>observes side effects</td></tr>
+</table>
+
+<p>In a mutable vector library, <tt>make-vector</tt> could serve as a good example
+of <tt>*</tt> primitive (allocates from the heap), <tt>vector-set!</tt> as 
+<tt>!</tt> primitive (produces side effects thet might affect the results
+and/or effects of other expressions), and <tt>vector-ref</tt> as <tt>?</tt> 
+primitive (does not allocate or produce side effects, but its result is affected
+by other expressions that may modify the vector). Primitive code can
+exibit any combination of these properties, so there are eight keywords
+to cover all possible combinations.</p>
+
+<p>#F compiler classifies primitives into categories based on their
+referential transparency, ability to cause garbage collection, and
+suitability for dead code elimination.</p>
+
+<p>The <tt>%prim</tt> keywords marks the referentially transparent code; 
+referentially transparent (RT) expressions always produce the same value 
+given the same arguments, allowing for many compiler optimizations. 
+All other keywords mark the code as not referentially transparent:</p>
+
+<table style="margin-left: 1pc; margin-top: 2ex;" cellpadding="4ex;">
+<tr><td style="width: 10ex"><em>RT</em></td><td><tt>%prim</tt></td></tr>
+<tr><td><em>not RT</em></td><td><tt>%prim* %prim? %prim!<br />%prim?! %prim*? %prim*! %prim*?!</tt></td></tr>
+</table>
+
+<p>Primitives that never allocate from garbage-collected heap do not
+trigger garbage collection (GC), opening possibilities for some 
+interesting compiler optimizations (#F compiler can use C calling
+mechanism for certain GC-safe procedures). Primitives that have no
+side effects and which values are not used are subject to dead code 
+elimination (DCE). The keywords for inline C expressions are
+split between these categories as follows:</p>
+
+<table style="margin-left: 1pc; margin-top: 2ex;" cellpadding="4ex;">
+<tr><td style="width: 10ex">&nbsp;</td><td><em>DCE safe</em></td><td><em>DCE unsafe</em></td></tr>
+<tr><td><em>GC safe</em></td><td><tt>%prim&nbsp;&nbsp;%prim?&nbsp;</tt></td><td><tt>%prim!&nbsp;&nbsp;%prim?!</tt></td></tr>
+<tr><td><em>GC unsafe</em></td><td><tt>%prim*&nbsp;%prim*?&nbsp;</tt></td><td><tt>%prim*!&nbsp;%prim*?!</tt></td></tr>
+</table>
+
+<p><em>Note:&nbsp;&nbsp;</em>inline C code that reads from files should
+be tagged by <tt>%prim?!</tt> keyword because such code affects the file 
+read pointer and depends on the effects of previous reads.</p> 
+
+
+<!--
+(define-inline (no-effect) 'no-effect) ; functional, can be eliminated if not used
+(define-inline (*-effect) '*-effect) ; allocates, but has no other effects
+(define-inline (?-effect) '?-effect) ; only observes effects of others; doesn't alloc
+(define-inline (!-effect) '!-effect) ; produces effects; doesn't alloc
+(define-inline (?!-effect) '?!-effect) ; has & observes effects; doesn't alloc
+(define-inline (*?-effect) '*?-effect) ; allocates, observes effects of others
+(define-inline (*!-effect) '*!-effect) ; allocates, produces effects
+(define-inline (*?!-effect) '*?!-effect) ; anything but the nasal demons
+-->
+
+
+</div>
+</body>
+</html>

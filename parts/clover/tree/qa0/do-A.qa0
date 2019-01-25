@@ -1,0 +1,15 @@
+(include "types.qa0")
+(include "defs-A.qa0")
+(include "defs-B.qa0")
+
+(procedure do-A ([stem "do_A"]
+                 prec&color
+                 count-flops)
+       ([res-x     pointer   "res_x"    "struct FermionX *"       ]
+        [size      int       "size"     "size_t"                  ]
+        [C         pointer   "C"        "const struct CloverX *"  ]
+        [src-x     pointer   "src_x"    "const struct FermionX *" ])
+  (loop () (i [const 0] [reg size])
+    (macro S-compute-A [reg Ap] [reg C] [reg src-x])
+    (store qcd-fermion () ([reg res-x]) [reg Ap])
+    (op pointer-add () (res-x) ([reg res-x] [const (size-of Fermion)]))))

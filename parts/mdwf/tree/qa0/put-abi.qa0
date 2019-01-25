@@ -1,0 +1,18 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+
+(procedure put-AB-Inverse ([stem "put_ABiTable"])
+           ([ab-i-table  pointer "iabtable"   "struct ABiTable *" ]
+            [index       int     "p"          "size_t"            ]
+            [a-val       double  "a_val"      "double"            ]
+            [b-val       double  "b_val"      "double"            ]
+            [c-val       double  "c_val"      "double"            ])
+   (op int-sub () (x) ([reg index] [const 1]))
+   (op int-mul () (y) ([reg x] [const (size-of abc)]))
+   (op int-add () (z) ([reg y] [const (offset-of AB-Inverse abc)]))
+   (op pointer-add () (p) ([reg ab-i-table] [reg z]))
+   (store double () ([reg p] [const (offset-of abc a)]) [reg a-val])
+   (store double () ([reg p] [const (offset-of abc b)]) [reg b-val])
+   (store double () ([reg p] [const (offset-of abc c)]) [reg c-val])
+)

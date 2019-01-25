@@ -1,0 +1,10 @@
+(procedure test-op ([stem "xx"] count-flops)
+       ([res pointer "r" "double *"]
+        [f pointer "f" "struct Fermion *"]
+        [g pointer "g" "struct Fermion *"])
+   (load qcd-fermion () $f ([reg f]))
+   (load qcd-fermion () $g ([reg g]))
+   (op qcd-project ([project 0 plus]) (x) ([reg $f]))
+   (op qcd-unproject-5-dot ([unproject-5 0 plus]) ($r) ([reg x] [reg $g]))
+   (store complex-double () ([reg res]) [reg $r]))
+

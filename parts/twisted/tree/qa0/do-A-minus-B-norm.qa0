@@ -1,0 +1,32 @@
+(include "types.qa0")
+(include "defs-A.qa0")
+(include "defs-B.qa0")
+
+(procedure do-AmBn ([stem "do_AmB_norm"]
+                    prec&color
+                    count-flops)
+       ([res-x     pointer   "res_x"    "struct FermionX *"       ]
+        [ptr-re    pointer   "l_norm"   "double *"                ]
+        [start     int       "start"    "size_t"                     ]
+        [size      int       "size"     "size_t"                     ]
+        [nb        pointer   "neighbor" "const struct neighbor *" ]
+        [U         pointer   "U"        "const struct SUn *"      ]
+        [tw        pointer   "tw"       "const struct Twisted *"  ]
+        [src-x     pointer   "src_x"    "const struct FermionX *" ]
+        [src-y     pointer   "src_y"    "const struct FermionX *" ]
+        [buf*      pointer   "rb"       "void **"                 ])
+  (op qcd-fnorm-init () (l-norm) ())
+  (op int-mul () (x-start) ([reg start] [const (size-of Fermion)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg x-start]))
+  (op pointer-add () (src-x) ([reg src-x] [reg x-start]))
+  (op int-mul () (nb-start) ([reg start] [const (size-of neighbor)]))
+  (op pointer-add () (nb) ([reg nb] [reg nb-start]))
+  (macro load-twist [reg v-x] [reg v-y] [reg tw])
+  (loop () (i [const 0] [reg size])
+    (macro S-compute-A [reg A+B] [reg v-x] [reg v-y] [reg src-x])
+    (macro S-compute-sub-B [reg A+B] [reg nb] [reg U] [reg src-y] [reg buf*])
+    (op qcd-fnorm-add () (l-norm) ([reg l-norm] [reg A+B]))
+    (store qcd-fermion () ([reg res-x]) [reg A+B])
+    (op pointer-add () (res-x) ([reg res-x] [const (size-of Fermion)])))
+  (op qcd-fnorm-fini () (v) ([reg l-norm]))
+  (store double () ([reg ptr-re]) [reg v]))

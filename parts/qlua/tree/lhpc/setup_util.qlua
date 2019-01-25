@@ -1,0 +1,164 @@
+-- routines frequently used on job startup
+--
+
+
+-- momentum lists 
+function mom3d_list_norm2max(mom2_max)
+  local pi_max = 0
+  while pi_max * pi_max <= mom2_max do pi_max = pi_max + 1 end
+  local mom_list = {}
+  for px = -pi_max + 1, pi_max - 1 do
+    for py = -pi_max + 1, pi_max - 1 do
+      for pz = -pi_max + 1, pi_max - 1 do
+        if px * px + py * py + pz * pz <= mom2_max then
+          table.insert(mom_list, {px, py, pz})
+        end
+      end
+    end
+  end
+  return mom_list
+end
+
+function rnd_init(L, x)
+  local l_s = 1
+  local l_id = L:Int(0)
+  for d = 0, #L - 1 do
+    l_id = l_id + l_s * L:pcoord(d)
+    l_s = l_s * L[d]
+  end
+  return L:RandomState(x, l_id)
+end
+
+-- return field 'f' shifted 'from_forward' by vector 'v'; all components of 'v' must be >=0
+-- equivalent to shifting the origin of lattice: point 'v' will be the new {0,0,0,0}
+function shift_origin_field(f, v)
+  local L = f.lattice
+  local res = f
+  for mu=0, #L-1 do
+    assert(0 <= test_shift_vec[1+mu])
+    for k=0, test_shift_vec[1+mu] - 1 do
+      res = res:shift(mu, "from_forward")
+    end
+  end
+  return res
+end
+
+
+function make_mom_list(mom2_max)
+  local pi_max = 0
+  while pi_max * pi_max <= mom2_max do pi_max = pi_max + 1 end
+  local mom_list = {}
+  for px = -pi_max + 1, pi_max - 1 do
+    for py = -pi_max + 1, pi_max - 1 do
+      for pz = -pi_max + 1, pi_max - 1 do
+        if px * px + py * py + pz * pz <= mom2_max then
+          table.insert(mom_list, {px, py, pz})
+        end
+      end
+    end
+  end
+  return mom_list
+end
+function make_mom_list_4d(mom2_max, mom_t)
+  local mom_list = make_mom_list(mom2_max)
+  for i,v in pairs(mom_list) do
+    v[4] = mom_t
+  end
+  return mom_list
+end
+
+function range_prod(ranges, filter)
+  -- create direct product of ranges : 
+  --    ranges = {range1, range2, ....}
+  --    return { {x1,x2, ...} for x1 in range1 for x2 in range2 ... }
+  --    XXX x1 changes fastest
+  if #ranges <= 0 then return {} 
+  elseif 1 == #ranges then
+    local res = {}
+    for _,x in pairs(ranges[1]) do 
+      if ( (not filter) or filter({x}) ) then 
+        res[1+#res] = {x} 
+      end
+    end
+    return res
+  else
+    local rhead = {}
+    for ir=1, #ranges-1 do rhead[ir] = ranges[ir] end -- first (n-1) ranges
+    local res = {}
+    local chead_list = range_prod(rhead)
+    for ix,x in pairs(ranges[#ranges]) do --iteration over the last coord
+      for _,chead in pairs(chead_list) do
+        local c = copy_table(chead)
+        c[1+#c] = x
+        if ( (not filter) or filter(c) ) then 
+          res[1+#res] = c
+        end
+      end
+    end
+    return res
+  end
+end
+
+function gauge_set_bc(u, bc)    -- use qlib/gauge.qlua:gauge_apply_bc
+  -- TODO there is a function in gauge.qlua that does it
+  -- modify gauge field links u to have bc
+  --  u   array of gauge link fields
+  --  bc  array of bc factors (applied from left)
+  local L = u[1].lattice
+  for mu = 0, #L-1 do
+    L:Subset{axis=mu, position=L[mu]-1}:where(function()
+      u[1+mu]:set(bc[1+mu] * u[1+mu])
+    end)
+  end
+end
+
+-- make a grid of sources x0 + (latsize/n_src)*i_src + dx_c * i_c
+function make_src_grid(n_src, latsize, x0, dx_c, i_c)
+  local dx_g     = { }
+  for i, n_i in pairs(n_src) do
+    dx_g[i] = latsize[i] / n_i
+  end
+
+  local src_list = {}
+  local i_src = 0
+  for ix = 0, n_src[1]-1 do for iy = 0, n_src[2]-1 do 
+  for iz = 0, n_src[3]-1 do for it = 0, n_src[4]-1 do
+    local ii = {ix,iy,iz,it}
+    local s = {}
+    for k = 1, 4 do
+      s[k] = (x0[k] + dx_c[k] * i_c + dx_g[k] * ii[k]) % latsize[k]
+    end
+    i_src = i_src + 1
+    src_list[i_src] = s
+  end end end end
+  return src_list
+end
+-- make groups of sources on a grid x0 + (latsize/n_src)*i_src + dx_c * i_c
+-- grouped by spatial coord
+function make_srcgrp_grid(n_src, latsize, x0, dx_c, i_c)
+  local dx_g     = { }
+  for i, n_i in pairs(n_src) do
+    dx_g[i] = latsize[i] / n_i
+  end
+
+  local srcgrp_list = {}
+  local i_srcgrp = 0
+  for ix = 0, n_src[1]-1 do for iy = 0, n_src[2]-1 do 
+  for iz = 0, n_src[3]-1 do 
+    local i_src = 0
+    local srcgrp = {}
+    for it = 0, n_src[4]-1 do
+      local ii = {ix,iy,iz,it}
+      local s = {}
+      for k = 1, 4 do
+        s[k] = (x0[k] + dx_c[k] * i_c + dx_g[k] * ii[k]) % latsize[k]
+      end
+      i_src = i_src + 1
+      srcgrp[i_src] = s
+    end
+    i_srcgrp = i_srcgrp + 1
+    srcgrp_list[i_srcgrp] = srcgrp
+  end end end
+  return srcgrp_list
+end
+

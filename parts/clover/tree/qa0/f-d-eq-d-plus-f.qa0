@@ -1,0 +1,17 @@
+(include "types.qa0")
+
+(procedure fermion-d=d+f ([stem "f_d_eq_dpf"]
+                          color
+                          count-flops)
+           ([R         pointer "r"         "struct FermionD *"       ]
+            [size      int     "size"      "size_t"                  ]
+            [A         pointer "a"         "const struct FermionD *" ]
+            [B         pointer "b"         "const struct FermionF *" ])
+   (loop () (i [const 0] [reg size])
+     (load qcd-fermion-double () vA ([reg A]))
+     (op pointer-add () (A) ([reg A] [const (size-of Fermion-double)]))
+     (load qcd-fermion-float () vB ([reg B]))
+     (op pointer-add () (B) ([reg B] [const (size-of Fermion-float)]))
+     (op qcd-addf () (A+B) ([reg vA] [reg vB]))
+     (store qcd-fermion-double () ([reg R]) [reg A+B])
+     (op pointer-add () (R) ([reg R] [const (size-of Fermion-double)]))))

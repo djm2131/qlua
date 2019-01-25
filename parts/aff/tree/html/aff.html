@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <meta name="author" content="Andrew Pochinsky" />
+  <meta name="keywords" content="MIT, QCD, LQCD, LHPC, LNS, CTP" />
+  <meta name="description" content="LHPC Analysis File Format" />
+  <meta name="robots" content="all" />
+  <title>LHPC AFF</title>
+  <!-- to correct the unsightly Flash of Unstyled Content, aka FOUC.. see http://www.bluerobot.com/web/css/fouc.asp -->
+  <script type="text/javascript">
+  </script>
+  <!--import BGL stylesheet-->
+  <style type="text/css" media="all">
+@import "lhpc.css";</style>
+</head>
+
+<body>
+<!--banner-->
+
+<table width="100%">
+  <tbody>
+    <tr>
+      <td><img src="lhpc-small.png" alt="" /></td>
+      <td id="banner" valign="center"><h1>LHPC Candidate Analysis File
+        Format</h1>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div id="bannerline">
+</div>
+
+<table>
+  <tbody>
+    <tr>
+      <!--left panel-->
+      <td id="navi">
+        <table>
+          <tbody>
+            <tr valign="top">
+              <td id="navi"><a href="./aff_spec.pdf">AFF
+              Specification</a></td>
+            </tr>
+            <tr valign="top">
+              <td id="navi"><a href="./lhpc-aff-2.0.0.tar.bz2">AFF
+              Sources</a></td>
+            </tr>
+            <tr valign="top">
+              <td id="navi"><a href="./???">Converter Documentation</a></td>
+            </tr>
+            <tr valign="top">
+              <td id="navi"><a href="./???">ADAT Converter </a></td>
+            </tr>
+            <tr valign="top">
+              <td id="navi"><a href="./aff-bgl-pvfs.html">Scaling on MIT BG/L
+                PVFS2</a></td>
+            </tr>
+            <tr valign="top">
+              <td id="navi"><a href="./aff-bgl-nfs.html">Scaling on MIT BG/L
+                NFS</a></td>
+            </tr>
+            <tr valign="top">
+              <td id="navi"><a href="./aff-bgl-local.html">Scaling on MIT
+                BG/L local FS</a></td>
+            </tr>
+            <tr valign="top">
+              <td id="navi"><a href="./aff-jlab-nfs.html">Scaling on JLab
+                NFS</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+      <!--body/center panel-->
+      <td id="body" valign="top">
+        <table>
+          <tbody>
+            <tr>
+              <td><h2>LHPC Analysis File Format (AFF)</h2>
+
+                <p>AFF is a flexible framework for storing heterogenious data
+                produced by LHPC designed for uniform data access by
+                hierahical keys and exceptional scaling to large data sets.
+                The framework consists of a portable library for manipulating
+                AFF files, a command line utility for common operations on
+                AFF files, and a set of converters from the existing LHPC
+                data formats into AFF. </p>
+
+                <p>The library is written in C99 and compiles on both 32- and
+                64-bit implementations of the Standard. If you are running on
+                a recent Linux installation you should be able to use the
+                library.</p>
+
+                <p>The application code does not need to convert between big-
+                and little-endian machines. AFF stores data in a portable
+                binary format and transparently handles conversion of data to
+                the target format.</p>
+
+                <p>The library handles large files quite well and shows
+                linear scaling on systems that properly support files larger
+                than 4GiB.</p>
+
+                <p>AFF is known to work on Linux (x86, x86-64, ppc32, ppc64)
+                and Mac OS X (10.4 ppc).</p>
+              </td>
+              <!--right panel-->
+              <td id="rightpanel"></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div id="bannerline">
+</div>
+<!--footer-->
+
+<table>
+  <tbody>
+    <tr>
+      <td id="footer"><a href="http://web.mit.edu/"><img
+        src="http://web.mit.edu/graphicidentity/interface/mit-greygrey-footer2.gif"
+        alt="MIT" width="173" height="60" style="border-width:0;" /> </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

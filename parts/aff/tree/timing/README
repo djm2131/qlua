@@ -1,0 +1,24 @@
+This directory contains scripts for timing AFF.
+To use these files do the following:
+
+1. Build lhpc-aff for the platform and install it. Here is an
+   example:
+
+    % AFFTEST=$HOME/aff-test
+    % make CONFIG=linux prefix=$AFFTEST -C .. install
+
+2. Copy run-me and mk-model to the directory you are going
+   run tests in. The full test will take about 40GB of disk
+   space is needed. If not enough space is afailable the test
+   will stop after consuming available space on the file system.
+
+    % TESTDIR=/scratch/$USER
+    % cp run-me mk-model $TESTDIR
+
+3. In the test directory, run the test
+
+    % cd $TESTDIR
+    % ./run-me $AFFTEST > aff.log
+    
+4. Relax. The test may take some time.
+

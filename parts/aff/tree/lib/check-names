@@ -1,0 +1,4 @@
+#!/bin/sh
+grep 'aff_' *.h | sed -e 's/[[(].*$//' -e 's/^.*aff_/aff_/' | sort > protos
+nm liblhpc-aff.a  | grep ' [TD] ' | sed -e 's/^.* [TD] _//' | sort > funcs
+diff protos funcs

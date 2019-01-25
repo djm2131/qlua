@@ -1,0 +1,12 @@
+(repeat ((d [const 0] [const *dim*]))
+   (procedure pd-plus ([stem "dop_unproj5_" d "_plus"])
+        ([res    pointer "res"    "double *" ]
+         [H      pointer "h"      "void *"   ]
+         [F      pointer "f"      "void *"   ])
+     (op nop (load F) () ())
+     (load qcd-fermion () FF ([reg F]))
+     (op nop (load H) () ())
+     (load qcd-projected-fermion () HH ([reg H]))
+     (op nop (dot d plus) () ())
+     (op qcd-unproject-5-dot ([unproject-5 d plus]) (XX) ([reg HH] [reg FF]))
+     (op nop (store result d plus) () ())))

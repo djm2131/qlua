@@ -1,0 +1,22 @@
+==========================
+For end users:
+To install qa0, to the following in the top directory
+
+% make
+% make install
+
+You may specify
+    prefix=PATH to install qa0 to a given path.
+    CC='cc ' to specify a C compiler.
+
+
+
+======================
+For maintainers:
+To build a distribution from the SVN sources, one need a working installation of
+#F. In the top directory say
+
+% make dist
+% make tar
+
+A tarball will be created in the parent directory.

@@ -1,0 +1,6 @@
+(include "types.qa0")
+
+(procedure size-of-c-ab-table ([stem "sizeof_cABTable"]
+                               [return total int "size_t"])
+           ([l-s    int "Ls"     "size_t"])
+   (op int-mul () (total) ([reg l-s] [const (size-of c-AB-Table)])))

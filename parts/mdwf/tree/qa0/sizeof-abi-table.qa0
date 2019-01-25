@@ -1,0 +1,11 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+
+(procedure size-of-abi-table ([stem "sizeof_ABiTable"]
+                              [return total int "size_t"])
+           ([l-s    int "Ls"     "size_t"])
+   (op int-sub () (x) ([reg l-s] [const 2]))
+   (op int-mul () (y) ([reg x] [const (size-of abc)]))
+   (op int-add () (total) ([reg y] [const (size-of AB-Inverse)])))
+

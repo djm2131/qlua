@@ -1,0 +1,8 @@
+;; check if scaling by 0.0 works -- it does indeed!
+
+(procedure AB ([stem "AB"] count-flops)
+              ([size   int       "size"   "int"             ]
+               [Ls     int       "ls"     "int"             ]
+               [res    pointer   "result" "struct Fermion *"])
+   (load qcd-fermion () x ([reg res]))
+   (op qcd-scalef () (z) ([const 0] [reg x])))

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ $# -ne 1 ] ; then
+    echo "Usage: package-dists name" 1>&2
+    exit 1
+fi
+name="$1"
+
+echo packaging
+git archive --format=tar --prefix=mdwf-${name}/ HEAD | (tar -xf -; cd mdwf-${name}; utils/prebuild)
+rm -fr mdwf-${name}

@@ -1,0 +1,28 @@
+(include "types.qa0")
+(include "defs-A.qa0")
+(include "defs-B.qa0")
+
+(procedure do-AxmBx ([stem "do_AxmBx"]
+                   prec&color
+                   count-flops)
+       ([res-x     pointer   "res_x"    "struct FermionX *"       ]
+        [start     int       "start"    "size_t"                  ]
+        [size      int       "size"     "size_t"                  ]
+        [nb        pointer   "neighbor" "const struct neighbor *" ]
+        [U         pointer   "U"        "const struct SUn *"      ]
+        [C         pointer   "C"        "const struct CloverX *"  ]
+        [src-x     pointer   "src_x"    "const struct FermionX *" ]
+        [src-y     pointer   "src_y"    "const struct FermionX *" ]
+        [buf*      pointer   "rb"       "void **"                 ])
+  (op int-mul () (x-start) ([reg start] [const (size-of Fermion)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg x-start]))
+  (op pointer-add () (src-x) ([reg src-x] [reg x-start]))
+  (op int-mul () (nb-start) ([reg start] [const (size-of neighbor)]))
+  (op pointer-add () (nb) ([reg nb] [reg nb-start]))
+  (op int-mul () (C-start) ([reg start] [const (size-of Clover)]))
+  (op pointer-add () (C) ([reg C] [reg C-start]))
+  (loop () (i [const 0] [reg size])
+    (macro S-compute-A* [reg A+B] [reg C] [reg src-x])
+    (macro S-compute-sub-B* [reg A+B] [reg nb] [reg U] [reg src-y] [reg buf*])
+    (store qcd-fermion () ([reg res-x]) [reg A+B])
+    (op pointer-add () (res-x) ([reg res-x] [const (size-of Fermion)]))))

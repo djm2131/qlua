@@ -1,0 +1,56 @@
+-- tests for naive topological charge
+
+require("stdlib")
+require("gauge")
+
+-------------------------------------------------------------------------------
+-- test code starts here
+L = qcd.lattice{4,4,4,8}
+
+volume = 1
+for i = 0, #L - 1 do
+  volume = volume * L[i]
+end
+
+function check_Q(name, U)
+   printf("Q(%-20s) = %10.5f\n", name, naive_q(U):sum())
+end
+
+
+if true then
+  -- read a random gauge
+  file_name = "../tests/random-gauge.nersc"
+  U = qcd.nersc.read_gauge(L,file_name)
+  printf("\n\n\n>>>> Using gauge field from \"%s\"\n\n", file_name)
+  check_Q("CHROMA random", U)
+end
+
+if true then
+  U = { L:ColorMatrix(complex(1,0)),
+        L:ColorMatrix(complex(1,0)),
+        L:ColorMatrix(complex(1,0)),
+        L:ColorMatrix(complex(1,0))}
+  printf("\n\n\n>>>> Using unit gauge field\n\n")
+  check_Q("U=1", U)
+end
+
+if true then
+  printf("\n\n\n>>>> Using gaussian random field\n\n")
+  local idx = L:Int(0)
+  for d = 0, #L - 1 do
+    idx = idx * L[d] + L:pcoord(d)
+  end
+  local S = L:RandomState(1984, idx)
+
+  U = { toSUn(S:gaussian_ColorMatrix()),
+        toSUn(S:gaussian_ColorMatrix()),
+        toSUn(S:gaussian_ColorMatrix()),
+        toSUn(S:gaussian_ColorMatrix()) }
+
+  check_Q("gaussian", U)
+  g = toSUn(5 * S:gaussian_ColorMatrix())
+  check_Q("gauge transformed", gauge_transform_U(g, U))
+end
+
+io.stdout:write("------ all done -----\n")
+

@@ -1,0 +1,240 @@
+# The following is required to build on pi0 for GPU as of 2016/12/01:
+#
+# export LD_LIBRARY_PATH=/usr/local/gcc-4.9.1/lib
+#
+# MPI_DIR=/usr/local/gcc-4.9.1/bin:/usr/local/openmpi-1.8.2/bin
+# CMAKE_DIR=$HOME/Local/packages/cmake-3.4.1/bin
+# CUDA_DIR=/usr/local/cuda-6.5/bin
+# PATH=$MPI_DIR:$CMAKE_DIR:$CUDA_DIR:$PATH make TARGET=fnal-pi0g
+#
+#installation prefix
+PREFIX   = $$HOME/Local/packages/qlua-201612xx-pi0g
+
+#parallel jobs in make
+XJOBS    = 8
+
+# host machine C compiler
+UCC      = gcc -Wno-parentheses-equality
+UCFLAGS  = -O2
+
+# target machine C compiler
+XCC      = mpicc -m64 -std=c99 \
+              -Wno-unused-but-set-variable \
+              -Wno-unused-local-typedefs
+XCFLAGS  = -O2
+#XCFLAGS  = -g
+XLDFLAGS =
+
+# Another target machine C compiler
+YCC      = mpicc -m64
+YCFLAGS  = $(XCFLAGS)
+YLDFLAGS = $(XLDFLAGS)
+
+# target match C++ compiler
+XCXX      = mpic++
+XCXXFLAGS = $(XCFLAGS)
+
+# CUDA installation
+CUDA.root = /usr/local/cuda-7.0
+
+# target machine Fortran compiler
+XFC      = mpif77 -m64 -fno-underscoring
+XFEXTRAS = -frecursive
+XFFLAGS  = -O2
+#XFFLAGS  = -g
+XFFLAGS0 = -O0
+XTIMER   = INT_ETIME
+
+# target machine architecture for qa0
+XTARGET  = cee-64
+
+# target machine archiver
+XAR      = ar
+XRANLIB  = ranlib
+
+# number of colors in CLOVER
+XCLOVER_NC = 3
+# number of colors in TWISTED
+XTWISTED_NC = 3
+
+####### which parts to build
+LUA.build        = yes
+SFC.build        = yes
+QA0.build        = yes
+GSL.build        = yes
+ARPACK.build     = yes
+LAPACK.build     = no
+AFF.build        = yes
+QMP.build        = yes
+HDF5.build       = yes
+QLA.build        = yes
+QIO.build        = yes
+QDP.build        = yes
+CLOVER.build     = yes
+TWISTED.build    = yes
+MDWF.build       = yes
+QOPQDP.build     = yes
+QUDA.build       = yes
+
+####### destinations
+AFF.dest     = $(PREFIX)/aff
+ARPACK.dest  = $(PREFIX)/arpack
+CLOVER.dest  = $(PREFIX)/clover
+TWISTED.dest = $(PREFIX)/twisted
+GSL.dest     = $(PREFIX)/gsl
+HDF5.dest    = $(PREFIX)/hdf5
+LAPACK.dest  = $(PREFIX)/lapack
+LUA.dest     = $(PREFIX)/lua
+MDWF.dest    = $(PREFIX)/mdwf
+QDP.dest     = $(PREFIX)/qdp
+QIO.dest     = $(PREFIX)/qio
+QLA.dest     = $(PREFIX)/qla
+QLUA.dest    = $(PREFIX)/qlua
+QMP.dest     = $(PREFIX)/qmp
+QOPQDP.dest  = $(PREFIX)/qopqdp
+QUDA.dest    = $(PREFIX)/quda
+
+####### configations
+
+LUA.cc     = $(XCC)
+LUA.cflags = $(XCFLAGS)
+LUA.ar     = $(XAR) cr
+LUA.ranlib = $(XRANLIB)
+
+SFC.cc    = $(UCC) $(UCFLAGS)
+
+QA0.cc      = $(UCC) $(UCFLAGS)
+
+GSL.config = CC="$(YCC)" \
+             CFLAGS="$(YCFLAGS)" \
+             --prefix="$(GSL.dest)" \
+             --disable-shared
+
+ARPACK.fc      = ${XFC}
+ARPACK.fflags  = ${XFFLAGS}
+ARPACK.pfc     = ${XFC}
+ARPACK.pfflags = ${XFFLAGS}
+ARPACK.mpilibs = ${XLIBS}
+
+LAPACK.shell       = /bin/sh
+LAPACK.fortran     = $(XFC)
+LAPACK.opts        = $(XFFLAGS) $(XFEXTRAS)
+LAPACK.drvopts     = $(XFFLAGS)
+LAPACK.noopt       = $(XFFLAGS0) $(XFEXTRAS)
+LAPACK.loader      = $(XFC)
+LAPACK.loadopts    =
+LAPACK.timer       = $(XTIMER)
+LAPACK.cc          = $(XCC)
+LAPACK.cflags      = $(XCFLAGS)
+LAPACK.arch        = $(XAR)
+LAPACK.archflags   = cr
+LAPACK.ranlib      = $(XRANLIB)
+
+AFF.cc     = $(XCC)
+AFF.cflags = $(XCFLAGS)  -DHAS_INTEGRAL_OFF_T \
+                 -D_POSIX_C_SOURCE \
+                 -D_LARGEFILE_SOURCE \
+                 -D_FILE_OFFSET_BITS=64
+AFF.cxx       = $(XCXX)
+AFF.cxxflags  = $(XCXXFLAGS)
+AFF.ar        = $(XAR)
+AFF.ranlib    = $(XRANLIB)
+AFF.config    = linux
+
+QMP.config = CC="$(XCC) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE" \
+             AR="ar" \
+             RANLIB="$(XRANLIB)" \
+             CFLAGS="$(XCFLAGS)" \
+             ACLOCAL=aclocal-1.13 \
+             AUTOMAKE=automake-1.13 \
+             --with-qmp-comms-type=MPI \
+             --with-qmp-comms-libs='' \
+             --prefix="$(QMP.dest)"
+
+HDF5.config = CC="$(XCC)" \
+              CFLAGS="$(XCFLAGS)" \
+              LD="$(XCC)" \
+              --prefix="$(HDF5.dest)" \
+              --enable-parallel
+
+QLA.config = CC="$(XCC)" \
+             CFLAGS="$(XCFLAGS)" \
+             --prefix="$(QLA.dest)"
+
+QIO.config = CC="$(XCC)" \
+             CFLAGS="$(XCFLAGS)" \
+             --enable-parallel-arch=parscalar \
+             --enable-largefile \
+             --with-qmp="$(QMP.dest)" \
+             --prefix="$(QIO.dest)"
+
+QDP.config = CC="$(XCC)" \
+             CFLAGS="$(XCFLAGS)" \
+             --with-qmp="$(QMP.dest)" \
+             --with-qio="$(QIO.dest)" \
+             --with-qla="$(QLA.dest)" \
+             --prefix="$(QDP.dest)"
+
+CLOVER.cc     = $(XCC)
+CLOVER.cflags = $(XCFLAGS)
+CLOVER.nc     = $(XCLOVER_NC)
+CLOVER.target = $(XTARGET)
+CLOVER.config = --target="$(XTARGET)" \
+                --with-qdp="$(QDP.dest)" \
+                --with-qmp="$(QMP.dest)" \
+                --with-gsl="$(GSL.dest)" \
+                --prefix="$(CLOVER.dest)"
+
+TWISTED.cc     = $(XCC)
+TWISTED.cflags = $(XCFLAGS)
+TWISTED.nc     = $(XTWISTED_NC)
+TWISTED.target = $(XTARGET)
+TWISTED.config = --target="$(XTARGET)" \
+                --with-qdp="$(QDP.dest)" \
+                --with-qmp="$(QMP.dest)" \
+                --with-gsl="$(GSL.dest)" \
+                --prefix="$(TWISTED.dest)"
+
+MDWF.cc     = $(XCC)
+MDWF.cflags = $(XCFLAGS)
+MDWF.target = $(XTARGET)
+MDWF.config = --target="$(XTARGET)" \
+              --with-qmp="$(QMP.dest)" \
+              --with-gsl="$(GSL.dest)" \
+              --prefix="$(MDWF.dest)"
+
+QOPQDP.config = --with-qdp="$(QDP.dest)" \
+                --with-qla="$(QLA.dest)" \
+                --with-qio="$(QIO.dest)" \
+                --with-qmp="$(QMP.dest)" \
+                --prefix="$(QOPQDP.dest)" \
+                LDFLAGS="-L$(QDP.dest)/lib64 -L$(QLA.dest)/lib64 -L$(QIO.dest)/lib64" \
+                ACLOCAL=aclocal-1.13 \
+                AUTOMAKE=automake-1.13
+
+QUDA.cmake = -DQUDA_QMP=ON                \
+             -DQUDA_QMPHOME=$(QMP.dest)   \
+             -DQUDA_GPU_ARCH=sm_35
+
+QLUA.libs   = z cudart 
+QLUA.cc     = $(XCC)
+QLUA.fc     = $(XFC)
+QLUA.ld     = $(XCXX) -Xlinker -rpath -Xlinker '$(CUDA.root)'/lib64 -L '$(CUDA.root)'/lib64
+QLUA.cflags = $(XCFLAGS)
+QLUA.config = --with-lua="$(LUA.dest)"        \
+              --with-qdp="$(QDP.dest)"        \
+              --with-lhpc-aff="$(AFF.dest)"   \
+              --with-hdf5="$(HDF5.dest)"      \
+              --with-qopqdp="$(QOPQDP.dest)" \
+              --with-arpack="-L"$(LAPACK.dest)/lib" -L"$(ARPACK.dest)/lib" -lparpack -larpack -lmpi_mpifh -lgfortran" \
+              --with-mdwf="$(MDWF.dest)" \
+              --with-clover="$(CLOVER.dest)" \
+              --clover-nc=$(XCLOVER_NC) \
+              --with-twisted="$(TWISTED.dest)" \
+              --twisted-nc=$(XTWISTED_NC) \
+              --with-gsl="$(GSL.dest)"        \
+              --with-nc=N                     \
+              --with-nc=3                     \
+              --with-extras \
+              --with-quda="$(QUDA.dest)"      \
+              --prefix="$(QLUA.dest)"

@@ -1,0 +1,14 @@
+(include "types.qa0")
+
+(procedure put-up-pack ([stem "put_up_pack"]
+                        color)
+           ([up-pack   pointer "up_pack"   "struct up_pack *" ]
+            [index     int     "p"         "size_t"              ]
+            [f-value   int     "f"         "size_t"              ]
+            [u-value   int     "u"         "size_t"              ])
+   (op int-mul () (x) ([reg index] [const (size-of up-pack)]))
+   (op pointer-add () (ptr) ([reg up-pack] [reg x]))
+   (store int () ([reg ptr] [const (offset-of up-pack fermion)])
+                 [reg f-value])
+   (store int () ([reg ptr] [const (offset-of up-pack gauge)])
+                 [reg u-value]))

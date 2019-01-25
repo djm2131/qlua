@@ -1,0 +1,121 @@
+-- definition of dwf and Moebius routines
+--require "latvec"
+require "gauge"
+
+function dwf_y4to5(x_4d, L5)
+  -- extend 4d->5d with 'Y' vector
+  local x_5d = {}
+  x_5d[1]  = (.5*(1 - gamma{mu=5})) *x_4d
+  for s = 1, L5-2 do
+    x_5d[1+s] = 0.*x_4d
+  end
+  x_5d[L5] = (.5*(1 + gamma{mu=5})) *x_4d
+  return x_5d
+end
+function dwf_y5to4(x_5d, L5)
+  -- project 5d->4d with 'Y' vector
+  return (.5*(1 - gamma{mu=5})) *x_5d[1] + (.5*(1 + gamma{mu=5})) *x_5d[L5]
+end
+
+function dwf_z4to5(x_4d, L5)
+  -- extend 4d->5d with 'Z' vector
+  local x_5d = {}
+  x_5d[1]  = (.5*(1 + gamma{mu=5})) *x_4d
+  for s = 1, L5-2 do
+    x_5d[1+s] = 0.*x_4d
+  end
+  x_5d[L5] = (.5*(1 - gamma{mu=5})) *x_4d
+  return x_5d
+end
+function dwf_z5to4(x_5d, L5)
+  -- project 5d->4d with 'Z' vector
+  return (.5*(1 + gamma{mu=5})) *x_5d[1] + (.5*(1 - gamma{mu=5})) *x_5d[L5]
+end
+
+dwf_src_4to5  = dwf_z4to5
+dwf_sol_5to4  = dwf_y5to4
+
+
+function dwf_reflect_inplace(x_5d, L5)
+  for i = 1, L5/2 do
+    local aux = x_5d[i]
+    x_5d[i] = x_5d[L5+1-i]
+    x_5d[L5+1-i] = x_5d[i]
+  end
+end
+function dwf_reflect(x_5d, L5)
+  local rx_5d = latvec_copy(x_5d)
+  dwf_reflect_inplace(rx_5d, L5)
+  return rx_5d
+end
+
+
+function latvec_op_mdwf_dminus(gauge_u, M5, c5, x, unused)
+  -- multiply (array of) fermions with Dminus operator from Moebius definition
+  -- if x is an array, then b5,c5 are 
+  -- TODO add conj version
+  assert(gauge_u and M5 and c5 and x)
+  assert(nil == unused)
+  local xw_x = latvec_op_xwilson(x, gauge_u)
+  if 'table' == type(x) then
+    local L5 = #x
+    local c5 = latvec_asarray1d(c5, L5)
+    local res = {}
+    for s = 0, L5 - 1 do
+      res[1+s] = latvec_scalsum_left(
+              c5[1+s] * (4. - M5) - 1., x[1+s],
+              -c5[1+s],                 xw_x[1+s])
+    end
+    return res
+  else
+    return latvec_scalsum_left(
+            c5 * (4. - M5) - 1.,  x,
+            -c5,                  xw_x)
+  end
+end
+
+--* compute propagator including Dminus, i.e with action 
+--* S_fermion = \bar q [ Dminus^{-1} DMoebiusSlash ] q
+function calc_mdwf_prop(mdwf_solver, gauge_u, ferm_bc, L5, M5, 
+                        b5_s, c5_s, src,
+                        is_relaxed, is_verbose)
+  local b5_s = latvec_asarray1d(b5_s, L5)
+  local c5_s = latvec_asarray1d(c5_s, L5)
+
+  if type(src) == 'lattice.dirac.propagator' then
+    local sol_4d = (src.lattice):DiracPropagator()
+    for is = 0, 3 do
+      for ic = 0, src:colors()-1 do
+        sol_4d[{d=is,c=ic}] = calc_mdwf_prop(mdwf_solver, gauge_u, ferm_bc,
+                                      L5, M5, b5_s, c5_s,
+                                      src[{d=is, c=ic}], is_relaxed, is_verbose)
+      end
+    end
+    return sol_4d
+  elseif type(src) == 'lattice.dirac.fermion' then
+    local gauge_u_bc = gauge_copy(gauge_u)
+    gauge_apply_boundary(gauge_u_bc, ferm_bc)
+    local src_5d = dwf_src_4to5(src, L5)
+    src_5d[1]  = -1.*latvec_op_mdwf_dminus(gauge_u_bc, M5, c5_s[1], src_5d[1])
+    src_5d[L5] = -1.*latvec_op_mdwf_dminus(gauge_u_bc, M5, c5_s[L5], src_5d[L5])
+    return dwf_sol_5to4(mdwf_solver(src_5d, is_relaxed, is_verbose), L5)
+  elseif type(src) == 'table' then --works only for a 5d fermion; FIXME for 5d prop
+    local gauge_u_bc = gauge_copy(gauge_u)
+    gauge_apply_boundary(gauge_u_bc, ferm_bc)
+    local src_dminus = {}
+    for s = 0, L5 - 1 do
+      src_dminus[1+s] = -1.*latvec_op_mdwf_dminus(gauge_u_bc, M5, c5_s[1+s], src[1+s])
+    end
+    return mdwf_solver(src_dminus, is_relaxed, is_verbose)
+  else
+    error(string.format("invalid source type='%s'", type(src)))
+    return nil
+  end
+end
+-- wrapper including Dminus application
+function make_calc_mdwf_prop(mdwf_solver, gauge_u, ferm_bc, L5, M5, b5_s, c5_s)
+  return function(x, is_relaxed, is_verbose)
+    return calc_mdwf_prop(mdwf_solver, gauge_u, ferm_bc, L5, M5, b5_s, c5_s, 
+                          x, is_relaxed, is_verbose)
+  end
+end

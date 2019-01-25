@@ -1,0 +1,63 @@
+;;; Spin projection operations
+;;
+(define (project g-op d r V f)
+  (op qcd-project ([project d g-op]) (r) ([reg f])))
+
+(define (project-U g-op d r V f)
+  (op qcd-project ([project d g-op]) (h) ([reg f]))
+  (op qcd-mulh () (r) ([reg V] [reg h])))
+
+(define (project-U* g-op d r V f)
+  (op qcd-project ([project d g-op]) (h) ([reg f]))
+  (op qcd-mulh-conj () (r) ([reg V] [reg h])))
+
+(define (unproject q g-op d V h)
+  (op qcd-unproject ([unproject d g-op]) (q) ([reg h])))
+
+(define (unproject-U q g-op d U h)
+  (op qcd-mulh () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject ([unproject d g-op]) (q) ([reg Uh])))
+
+(define (sub-unproject q g-op d V h)
+  (op qcd-unproject-sub ([unproject d g-op]) (q) ([reg q] [reg h])))
+
+(define (add-unproject q g-op d V h)
+  (op qcd-unproject-add ([unproject d g-op]) (q) ([reg q] [reg h])))
+
+(define (sub-unproject-U q g-op d U h)
+  (op qcd-mulh () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject-sub ([unproject d g-op]) (q) ([reg q] [reg Uh])))
+
+(define (add-unproject-U q g-op d U h)
+  (op qcd-mulh () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject-add ([unproject d g-op]) (q) ([reg q] [reg Uh])))
+
+(define (one-x-gamma-U q g-op d U hh)
+  (op qcd-project ([project d g-op]) (h) ([reg hh]))
+  (op qcd-mulh () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject ([unproject d g-op]) (q) ([reg Uh])))
+
+(define (one-x-gamma-U* q g-op d U hh)
+  (op qcd-project ([project d g-op]) (h) ([reg hh]))
+  (op qcd-mulh-conj () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject ([unproject d g-op]) (q) ([reg Uh])))
+
+(define (sub-one-x-gamma-U q g-op d U hh)
+  (op qcd-project ([project d g-op]) (h) ([reg hh]))
+  (op qcd-mulh () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject-sub ([unproject d g-op]) (q) ([reg q] [reg Uh])))
+
+(define (add-one-x-gamma-U q g-op d U hh)
+  (op qcd-project ([project d g-op]) (h) ([reg hh]))
+  (op qcd-mulh () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject-add ([unproject d g-op]) (q) ([reg q] [reg Uh])))
+
+(define (sub-one-x-gamma-U* q g-op d U hh)
+  (op qcd-project ([project d g-op]) (h) ([reg hh]))
+  (op qcd-mulh-conj () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject-sub ([unproject d g-op]) (q) ([reg q] [reg Uh])))
+
+(define (add-one-x-gamma-U* q g-op d U hh)
+  (op qcd-project ([project d g-op]) (h) ([reg hh]))
+  (op qcd-mulh-conj () (Uh) ([reg U] [reg h]))
+  (op qcd-unproject-add ([unproject d g-op]) (q) ([reg q] [reg Uh])))

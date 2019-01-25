@@ -1,0 +1,64 @@
+-- completely meaningless values of parameters just to make life interesting
+
+Lx = 6
+Lt = 12
+
+L = qcd.lattice {Lx, Lx, Lx, Lt}
+
+-- get a unique number of each lattice site
+function rnd_init(x)
+  local l_s = 1
+  l_id = L:Int(0)
+  for d = 0, #L - 1 do
+    l_id = l_id + l_s * L:pcoord(d)
+    l_s = l_s * L[d]
+  end
+  return L:RandomState(x, l_id)
+end
+
+-- small deviation of identity in SU(3)
+function almost_su3(S, v)
+  local one = L:ColorMatrix(complex(1,0))
+  return one + v * S:gaussian_ColorMatrix()
+end
+
+S = rnd_init(1984)
+
+U = { almost_su3(S, 0.5),
+      almost_su3(S, 0.5),
+      almost_su3(S, 0.5),
+      almost_su3(S, 0.5) }
+
+F = S:gaussian_DiracFermion()
+G = S:gaussian_DiracFermion()
+
+CL = qcd.Clover(U, 0.081, 0.07, {1, 1, 1, 0})
+
+io.stdout:write("CLOVER  " .. tostring(CL) .. "\n")
+
+X = CL:D(F)
+Y = CL:Dx(G)
+
+io.stdout:write("<G, D F> " .. tostring(qcd.dot(G, X):sum())  .. "\n")
+io.stdout:write("<DxG, F> " .. tostring(qcd.dot(Y, F):sum())  .. "\n")
+
+function check_clover(Z)
+  io.stdout:write("check_clover Z=" .. tostring(Z) .. "\n")
+  local F = CL:D(Z)
+  local A = CL:solver(1e-20,10000)(F)
+  io.stdout:write("|Z| = " .. tostring(Z:norm2()) .."\n")
+  io.stdout:write("|F| = " .. tostring(F:norm2()) .."\n")
+  io.stdout:write("|A| = " .. tostring(A:norm2()) .."\n")
+  io.stdout:write("|d| = " .. tostring((A - Z):norm2()) .."\n")
+  local A = CL:mixed_solver(1e-3, 100, 1e-20, 10000)(F)
+  io.stdout:write("m|Z| = " .. tostring(Z:norm2()) .."\n")
+  io.stdout:write("m|F| = " .. tostring(F:norm2()) .."\n")
+  io.stdout:write("m|A| = " .. tostring(A:norm2()) .."\n")
+  io.stdout:write("m|d| = " .. tostring((A - Z):norm2()) .."\n")
+
+end
+
+check_clover(S:gaussian_DiracFermion())
+check_clover(S:gaussian_DiracPropagator())
+
+os.exit(0)

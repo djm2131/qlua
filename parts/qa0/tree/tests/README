@@ -1,0 +1,3 @@
+This directory contains tests for various parts of qa0.
+All files should compile without error.
+./runme attempts to build for all combination of precision and targets.

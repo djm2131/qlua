@@ -1,0 +1,344 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>4. Macros</title>
+<style type="text/css">
+body { color: #333333; margin-top: 4pc; margin-left: 10pc; }
+#menu { display: block; top: 3pc; left: 45pc; width: 15pc; position: fixed; border: 0; padding: 0; text-align: left; }
+* html #menu { position: absolute; }
+#menu p { font-size: 9pt; line-height: 14pt; margin: 0; padding: 0;  }
+#menu p.tt { font-size: 11pt; line-height: 14pt; margin: 0; padding: 0;  }
+a:visited, a { text-decoration: none; color: #1D5CA5; }
+a:hover { text-decoration: underline; color: #1D5CA5; }
+body, p, h1, h2, h3, h4, abbr, var, q { font-family: Georgia, "Times New Roman"; font-size: 10pt; }
+tt, code, pre, p.tt { font-family: Consolas, "Courier New"; font-size: 11pt; }
+abbr, var { font-style: italic; }
+q { font-style: italic; text-decoration: none; }
+pre { margin-top: 1.5ex; margin-bottom: 0; }
+p { line-height: 3ex; font-size: 10pt; margin-top: 1.5ex; margin-bottom: 0; padding: 0; text-align: justify; }
+p.note { font-size: 9pt; }
+p.note tt, code, pre { font-size: 10.5pt; }
+h1 { margin-top: 0; margin-bottom: 0; font-size: 17pt; border-top: 1.5ex solid white; }
+h2 { margin-top: 0; margin-bottom: 0; font-size: 13pt; border-top: 3ex solid white; }
+h3 { margin-top: 0; margin-bottom: 0; font-size: 11pt; border-top: 3ex solid white; }
+h4 { margin-top: 0; margin-bottom: 0; font-size: 10pt; border-top: 1.5ex solid white; }
+table.proto { margin-top: 0; margin-bottom: 0; border: 0; border-spacing: 0; padding: 0; border-top: 3ex solid white;}
+table.proto td { font-size: 10pt; line-height: 3ex; }
+</style>
+<!--[if lte IE 6]>
+   <style type="text/css">
+   /*<![CDATA[*/ 
+html { overflow-x: auto; overflow-y: hidden; }
+   /*]]>*/
+   </style>
+<![endif]-->
+</head>
+<body>
+
+<div id="menu">
+<p>3.&nbsp;&nbsp;<a href="ch3.html">Expressions</a></p>
+<p>4.&nbsp;&nbsp;<a href="#">Macros</a></p>
+<p>4.1.&nbsp;&nbsp;<a href="#4.1.">Syntactic keywords</a></p>
+<p>4.2.&nbsp;&nbsp;<a href="#4.2.">Macro uses</a></p>
+<p>4.3.&nbsp;&nbsp;<a href="#4.3.">Macro abstractions</a></p>
+<p>4.4.&nbsp;&nbsp;<a href="#4.4.">Macro transformers</a></p>
+<p>5.&nbsp;&nbsp;<a href="ch5.html">Definitions</a></p>
+<p style="margin-top: 1ex; font-variant: small-caps">&lsaquo; <a href="toc.html">full table of contents</a> &rsaquo;</p>
+<p>&nbsp;</p>
+<p><tt>syntax-lambda</tt>&nbsp;&nbsp;&nbsp;<a href="#4.3.">4.3.</a></p>
+<p><tt>syntax-rules</tt>&nbsp;&nbsp;&nbsp;<a href="#4.4.">4.4.</a></p>
+<p style="margin-top: 1ex; font-variant: small-caps">&lsaquo; <a href="ioe.html">full index</a> &rsaquo;</p>
+</div>
+
+<div style="width: 30pc;">
+
+<a id="4."></a><h1>4.&nbsp;&nbsp;&nbsp;&nbsp;Macros</h1>
+
+<p>#F programs can define and use new kinds of derived expressions and definitions called 
+<em>syntactic abstractions</em> or <em>macros</em>. A syntactic abstraction is created by specifying 
+a <em>macro transformer</em> which determines how a use of the macro (called a <em>macro use</em>) 
+is transcribed into a more primitive form.</p>
+
+<p>During the macroexpansion process, macro transformers (among other things) can be syntactically
+bound to identifiers. Identifiers with syntactic bindings (opposed to variables which have regular bindings 
+introduced by lambda expression and its derivatives) are called <em>syntactic keywords</em> or just 
+<em>keywords</em>. Keywords occupy the same name space as variables. That is, within the same scope, 
+an identifier can be bound as a variable or keyword, or neither, but not both, and local bindings of 
+either kind may shadow other bindings of either kind.</p>
+
+<p>Macro transformers and syntactic bindings in effect during the expansion 
+of an expression direct the expansion process, but are absent from the residual program.
+The expansion is performed as the first phase of the compilation process and thus cannot
+be affected by the non-macro parts of the program being compiled.</p>
+
+<p class="note"><em>Rationale:&nbsp;&nbsp;</em>Most modern Scheme systems provide a way to mix macroexpansion
+and evaluation environments, allowing macros to use parts of the program being interpreted.
+This approach leads to all sorts of complications, which can be either resolved in ad-hoc manner
+(via <tt>eval-when</tt> and similar constructs), or by introduction of a “tower” of interpreters
+requiring an intricate computational environment to support it. #F chose a traditionalist standalone
+compiler model which requires a fixed compilation environment, so its macro system stays within
+the R<sup>5</sup>RS framework (no way to write a transformer in the target language, and thus no
+<tt>syntax-case</tt>).</p>
+
+<p>Macros defined using <em>syntax-lambda</em> and <em>syntax-rules</em> with no <em>template escapes</em>
+are “hygienic” and “referentially transparent” and thus preserve lexical scoping. Template escapes
+provide a limited set of methods to break the hygiene by introducing constructed identifiers which
+can bind or be bound by identifiers present in the original source code.</p>
+
+
+<a id="4.1."></a><h2>4.1.&nbsp;&nbsp;&nbsp;&nbsp;Syntactic keywords</h2>
+
+<table class="proto" width="100%" cellpadding="0" cellspacing="0">
+<tr><td><abbr>keyword</abbr></td><td align="right">syntax</td></tr>
+</table>
+
+<p>Macroexpansion of an expression consisting of a syntactic keyword (an identifier which is 
+bound via <tt>define-syntax</tt>, <tt>syntax-lambda</tt>, or their derivatives) produces its
+associated meaning in the syntactic environment of the keyword expression.</p>
+
+<p>The following examples assume the base math library has been imported:</p>
+
+<pre>(define-syntax x *)
+((if #f + x) 3 4) &rArr; 12
+((lambda (+ *) (x + *)) 3 4) &rArr; 12
+
+(define-syntax y if)
+((y #f + x) 3 4) &rArr; 12
+</pre>
+
+<p><em>Note:&nbsp;&nbsp;</em>In #F, as in R<sup>6</sup>RS Scheme, a macro writer cannot
+rely on referential transparency of identifier expressions. #F’s identifiers can be
+syntactically bound to expressions which may produce side effects (cf. <tt>identifier-syntax</tt>).</p>
+
+<a id="4.2."></a><h2>4.2.&nbsp;&nbsp;&nbsp;&nbsp;Macro uses</h2>
+
+<table class="proto" width="100%" cellpadding="0" cellspacing="0">
+<tr><td><code>(<abbr>macro</abbr> <abbr>datum<sub>1</sub></abbr> &hellip;)</code></td><td align="right">syntax</td></tr>
+</table>
+
+<p>A macro use is recognized during the macroexpansion of a parenthesized expression.
+If the first element of the expression expands to a macro transformer, the expression is
+a macro use and its expanded form is obtained by following the rules set by the transformer.
+At this step, the <abbr>datum</abbr> forms are not considered to be in expression position,
+so they are not expanded.</p>
+
+<p><em>Note:&nbsp;&nbsp;</em>Lambda expressions, conditionals, and assignments are macro uses,
+expanded according to built-in rules associated with syntactic keywords <tt>lambda</tt>, <tt>if</tt>,
+and <tt>set!</tt>, respectively. So are all other syntax forms in this chapter except for variable
+references and applications.</p>
+
+<p>The following examples assume the base math library has been imported:</p>
+
+<pre>
+(define-syntax ifnot
+  (syntax-rules ()
+    ((ifnot test con alt)
+     (if test alt con))))
+
+((ifnot #t + *) 3 4) &rArr; 12
+
+((syntax-rules ()
+   ((let ((var init) ...) exp)
+    ((lambda (var ...) exp) 
+     init ...)))
+ ((x 1) (y 2)) (+ x y)) &rArr; 3
+</pre>
+
+
+<a id="4.3."></a><h2>4.3.&nbsp;&nbsp;&nbsp;&nbsp;Macro abstractions</h2>
+
+<table class="proto" width="100%" cellpadding="0" cellspacing="0">
+<tr><td><code>(syntax-lambda (<abbr>keyword<sub>1</sub></abbr> &hellip;) <abbr>body</abbr>)</code></td><td align="right">syntax</td></tr>
+</table>
+
+<p>When expanded, each use of <tt>syntax-lambda</tt> produces a new macro transformer. 
+The syntactic environment in effect when the use of <tt>syntax-lambda</tt> was expanded is
+remembered as part of the transformer. When the transformer is later used with some datums
+as arguments, the datums are first expanded in the syntactic environment of macro use,
+then the syntactic environment in which <tt>syntax-lambda</tt> form was expanded is
+extended by syntax bindings of each <abbr>keyword</abbr> to the corresponding result
+of the expansion of the argument datums, and then the <abbr>body</abbr> is expanded
+in the extended environment.</p>
+
+<p>The <abbr>body</abbr> of the <tt>syntax-lambda</tt> form is a single expression or
+a sequence of definitions and expressions. If the body is a single expression, it is
+expanded as described above and the expansion result is processed in accordance with the
+usual evaluation rules (if the original form was in expression position). The semantics
+of <abbr>body</abbr> as a sequence of definitions and expressions is described in the 
+next section.</p>
+
+<p>It is an error for a <abbr>keyword</abbr> to appear more than once in the keyword list
+of the <tt>syntax-lambda</tt> expression.</p> 
+
+<p>The following example assumes the base math library has been imported:</p>
+
+<pre>
+(define-syntax si
+  (syntax-lambda (test con alt)
+    (if test con alt)))
+
+((si #f + *) 3 4) &rArr; 12
+</pre>
+
+
+<a id="4.4."></a><h2>4.4.&nbsp;&nbsp;&nbsp;&nbsp;Macro transformers</h2>
+
+<table class="proto" width="100%" cellpadding="0" cellspacing="0">
+<tr><td><code>(syntax-rules (<abbr>literal</abbr> &hellip;) (<abbr>pattern<sub>1</sub></abbr> <abbr>template<sub>1</sub></abbr>) &hellip;)</code></td><td align="right">syntax</td></tr>
+<tr><td><code>(syntax-rules <abbr>ellipsis</abbr> (<abbr>literal</abbr> &hellip;) (<abbr>pattern<sub>1</sub></abbr> <abbr>template<sub>1</sub></abbr>) &hellip;)</code></td><td align="right">syntax</td></tr>
+</table>
+
+<p>Each use of <tt>syntax-rules</tt> produces a new macro transformer by specifying a sequence 
+of hygienic rewrite rules. A use of a macro which expands to a transformer specified by <tt>syntax-rules</tt>
+is matched against patterns contained in the body of the form, beginning with the leftmost <abbr>pattern</abbr>. 
+When a match is found, the macro use is transcribed hygienically according to the corresponding <abbr>template</abbr>
+and the expansion process is repeated until the result of the transcription is no longer a macro use.</p>
+
+<p>An identifier that appears in <abbr>pattern</abbr> is a pattern variable, unless it is the identifier 
+that begins the pattern, is listed as <abbr>literal</abbr> in the head of the form, or is the identifier 
+<abbr>ellipsis</abbr> (defaults to the peculiar three dots identifier <tt>...</tt>). Pattern variables match 
+arbitrary input elements and are used to refer to elements of the input in the <abbr>template</abbr>. 
+It is an error for the same pattern variable to appear more than once in <abbr>pattern</abbr>.</p>
+
+<p>The identifier at the beginning of <abbr>pattern</abbr> is not involved in the matching and is not considered 
+a pattern variable or literal identifier. The first subform of the macro use (a transformer) is also not
+involved in the matching.</p>
+
+<p>An identifiers that appears as <abbr>literal</abbr> is interpreted as a literal identifier to be matched against 
+corresponding subforms of the input. A subform in the input matches a literal identifier if and only if it is 
+an identifier and either both its occurrence in the macro expression and its occurrence in the macro definition 
+have the same lexical binding, or the two identifiers are equal and both have no lexical binding.</p>
+
+<p> A <abbr>pattern</abbr> is an identifier, constant, or one of the following:</p>
+
+<pre style="line-height: 3.5ex"> &bull; (<abbr>pattern</abbr> &hellip;)
+ &bull; (<abbr>pattern</abbr> <abbr>pattern</abbr> &hellip; . <abbr>pattern</abbr>)
+ &bull; (<abbr>pattern</abbr> &hellip; <abbr>pattern</abbr> <abbr>ellipsis</abbr> <abbr>pattern</abbr> &hellip;)
+ &bull; (<abbr>pattern</abbr> &hellip; <abbr>pattern</abbr> <abbr>ellipsis</abbr> <abbr>pattern</abbr> &hellip; . <abbr>pattern</abbr>)
+ &bull; #(<abbr>pattern</abbr> &hellip;)
+ &bull; #(<abbr>pattern</abbr> &hellip; <abbr>pattern</abbr> <abbr>ellipsis</abbr> <abbr>pattern</abbr> &hellip;)
+ &bull; #&(<abbr>pattern-escape</abbr> <abbr>pattern</abbr>)
+</pre>
+
+<p>In nested appearances of <abbr>pattern</abbr>, the first position is subject to the normal
+matching rules. A <abbr>template</abbr> is a pattern variable, an identifier 
+that is not a pattern variable, a pattern datum, or one of the following:</p>
+
+<pre style="line-height: 3.5ex"> &bull; (<abbr>element</abbr> &hellip;)
+ &bull; (<abbr>element</abbr> <abbr>element</abbr> &hellip; . <abbr>template</abbr>)
+ &bull; #(<abbr>element</abbr> &hellip;)
+ &bull; #&(<abbr>template-escape</abbr> <abbr>element</abbr> &hellip;)
+ &bull; #&(<abbr>template-escape</abbr> <abbr>element</abbr> <abbr>element</abbr> &hellip; . <abbr>template</abbr>)
+</pre>
+
+<p>where an <abbr>element</abbr> is a <abbr>template</abbr> optionally followed by an 
+<abbr>ellipsis</abbr> and an <abbr>ellipsis</abbr> is either the identifier supplied 
+in the <tt>syntax-rules</tt> use or the identifier <tt>...</tt> (three dots). A 
+<abbr>pattern-escape</abbr> and <abbr>template-escape</abbr> are specified below.
+An <abbr>ellipsis</abbr> cannot be used as an identifier in either a template or a pattern.</p>
+
+<p>Pattern variables match arbitrary input subforms and are used to refer to elements of the input. 
+It is a syntax violation if the same pattern variable appears more than once in a <abbr>pattern</abbr>.</p>
+
+<p>A literal identifier matches an input subform if and only if the input subform is an identifier 
+and either both its occurrence in the input expression and its occurrence in the list of literals 
+have the same lexical binding, or the two identifiers have the same name and both have no lexical 
+binding.</p>
+
+<p>A subpattern followed by an ellipsis can match zero or more elements of the input.</p>
+
+<p>When a macro use is transcribed according to the template of the matching syntax rule, 
+pattern variables that occur in the template are replaced by the subforms they match in 
+the input.</p>
+
+<p>Pattern data and identifiers that are not pattern variables or ellipses are copied 
+into the output. A template followed by an ellipsis expands into zero or more occurrences 
+of the template. Pattern variables that occur in patterns followed by one or more ellipses 
+may occur only in templates that are followed by (at least) as many ellipses. These pattern 
+variables are replaced in the output by the input subforms to which they are bound, 
+distributed as specified. If a pattern variable is followed by more ellipses in the 
+template than in the associated pattern, the input form is replicated as necessary. 
+The template must contain at least one pattern variable from a pattern followed by 
+an ellipsis, and for at least one such pattern variable, the template must be followed 
+by exactly as many ellipses as the pattern in which the pattern variable appears. 
+(Otherwise, the expander would not be able to determine how many times the subform 
+should be repeated in the output.) It is a syntax violation if the constraints 
+of this paragraph are not met.</p>
+
+<p>A <abbr>pattern-escape</abbr> is one of the following identifiers, recognized
+by their literal names:</p> 
+
+<pre style="line-height: 3.5ex"> &bull; number?          <q>matches numerical constants</q>
+ &bull; string?          <q>matches string constants</q>
+ &bull; id?              <q>matches identifiers (symbols)</q>
+</pre>
+
+<p>A <abbr>pattern-escape</abbr> pattern matches an input subform if its subpattern
+matches the subform and satisfies a constraint specified by the escape name. In all
+other respects a <abbr>pattern-escape</abbr> pattern is equivalent to its subpattern.</p> 
+
+<p>A <abbr>template-escape</abbr> is one of the following identifiers, recognized
+by their literal names:</p> 
+
+<pre style="line-height: 3.5ex">
+ &bull; number->string   <q>converts a number into a string</q>
+ &bull; string->number   <q>converts a string into a number</q>
+ &bull; list->string     <q>converts a list of characters into a string</q>
+ &bull; string->list     <q>converts a string into a list of characters</q>
+ &bull; id->string       <q>converts an identifier into a string</q>
+ &bull; string->id       <q>converts a string into a capturing identifier</q>
+ &bull; length           <q>converts a list to its length (a number)</q>
+ &bull; +                <q>adds numbers</q>
+ &bull; *                <q>multiplies numbers</q>
+ &bull; string-append    <q>appends strings</q>
+</pre>
+
+<p>A <abbr>template-escape</abbr> template expands by first expanding its subtemplates
+as if they were components of a list template. The result of the expansion is then
+processed according to a transformation specified by the name of the template escape.
+The first seven escape forms require exactly one subform, the remaining three can accept
+any number of subforms. It is an error if a subform does not belong to a class
+implied in the escape name.</p>
+
+<p>The <tt>string->id</tt> escape expands into an identifier that can refer to a
+synonymous binding in the lexical scope of the transformer macro use. If it is
+introduced into a bound position, it can capture the references by the same name
+withing the scope of its binding. In short, the constructed identifier behaves
+as if it were present in the original program text.</p>
+
+<p>The following examples assume the base math library has been imported:</p>
+
+<pre>
+(define-syntax let-syntax
+  (syntax-rules ()
+    ((_ ((kw init) ...) . body)
+     ((syntax-lambda (kw ...) . body)
+      init ...))))
+
+(let-syntax 
+  ((foo (let-syntax 
+          ((bar (syntax-rules () ((bar x) (- x)))))
+          (syntax-rules () ((foo) (bar 2))))))
+  (foo))  
+&rArr; -2
+
+(let-syntax ((q quote)) (q x)) &rArr; x
+
+(define n 0)
+(let-syntax ((n++ (set! n (+ n 1))))
+  (begin n++ n++ n++ n))
+&rArr; 3
+
+(define-syntax with-math-defines 
+  (syntax-rules () 
+    ((_ x) 
+     ((lambda (#&(string->id "pi") #&(string->id "e")) x) 
+      3.141592653589793 2.718281828459045))))
+(with-math-defines (+ pi e)) 
+&rArr; 5.859874482048838
+</pre>
+
+</div>
+</body>
+</html>

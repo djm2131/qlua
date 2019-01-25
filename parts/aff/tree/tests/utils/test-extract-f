@@ -1,0 +1,21 @@
+PREFIX="$WKDIR/extract-f."
+
+rm -f ${PREFIX}int1.aff ${PREFIX}int2.aff
+$RUN extract -f - ${TEST_DIR}/xx1.aff >>$LOG 2>&1 <<EOF ||exit 1
+int1 ${PREFIX}int1.aff int1
+int1 ${PREFIX}int1.aff int2
+a1 ${PREFIX}int1.aff aa1
+
+a1 ${PREFIX}int2.aff a3
+int1 ${PREFIX}int2.aff int3
+EOF
+
+$RUN check ${PREFIX}int1.aff >>$LOG 2>&1 ||exit 1
+$RUN ls -lR ${PREFIX}int1.aff >${PREFIX}test.out 2>>$LOG ||exit 1
+$RUN check ${PREFIX}int2.aff >>$LOG 2>&1 ||exit 1 
+$RUN ls -lR ${PREFIX}int2.aff >>${PREFIX}test.out 2>>$LOG ||exit 1
+
+$DIFF ${PREFIX}test.out ${TEST_DIR}/extract-f.out >>$LOG 2>&1 ||exit 1
+
+[[ $SAVE_TEST_OUT == "yes" ]] ||\
+	rm -f ${PREFIX}int1.aff ${PREFIX}int2.aff ${PREFIX}test.out

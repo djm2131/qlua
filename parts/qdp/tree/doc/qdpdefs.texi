@@ -1,0 +1,492 @@
+@c ==============
+@c Names of types
+@c ==============
+@macro tS
+QDP_RandomState
+@end macro
+@macro tI
+QDP_Int
+@end macro
+@macro tR
+QDP_Real
+@end macro
+@macro tC
+QDP_Complex
+@end macro
+@macro tV
+QDP_ColorVector
+@end macro
+@macro tH
+QDP_HalfFermion
+@end macro
+@macro tD
+QDP_DiracFermion
+@end macro
+@macro tM
+QDP_ColorMatrix
+@end macro
+@macro tP
+QDP_DiracPropagator
+@end macro
+
+@macro tqlaI
+QLA_Int
+@end macro
+@macro tqlaR
+QLA_Real
+@end macro
+@macro tqlaC
+QLA_Complex
+@end macro
+@macro tqlaM
+QLA_ColorMatrix
+@end macro
+
+@macro ctS
+@code{@tS}
+@end macro
+@macro ctI
+@code{@tI}
+@end macro
+@macro ctR
+@code{@tR}
+@end macro
+@macro ctC
+@code{@tC}
+@end macro
+@macro ctV
+@code{@tV}
+@end macro
+@macro ctH
+@code{@tH}
+@end macro
+@macro ctD
+@code{@tD}
+@end macro
+@macro ctM
+@code{@tM}
+@end macro
+@macro ctP
+@code{@tP}
+@end macro
+
+@macro ctqlaI
+@code{@tqlaI}
+@end macro
+@macro ctqlaR
+@code{@tqlaR}
+@end macro
+@macro ctqlaC
+@code{@tqlaC}
+@end macro
+@macro ctqlaM
+@code{@tqlaM}
+@end macro
+
+@c ======================
+@c Abbreviations of types
+@c ======================
+@macro aS
+@code{S}
+@end macro
+@macro aI
+@code{I}
+@end macro
+@macro aR
+@code{R}
+@end macro
+@macro aC
+@code{C}
+@end macro
+@macro aV
+@code{V}
+@end macro
+@macro aH
+@code{H}
+@end macro
+@macro aD
+@code{D}
+@end macro
+@macro aM
+@code{M}
+@end macro
+@macro aP
+@code{P}
+@end macro
+
+@macro allTypes
+S, I, R, C, V, H, D, M, P
+@end macro
+
+@macro allNumericTypes
+I, R, C, V, H, D, M, P
+@end macro
+
+@macro qdpPrecisionMacro
+@code{QDP_Precision}
+@end macro
+
+@macro qdpColorsMacro
+@code{QDP_Colors}
+@end macro
+
+@macro qdpNcMacro
+@code{QDP_Nc}
+@end macro
+
+@tex
+\gdef\hline{\cr\noalign{\hrule\vskip 1mm}}
+@end tex
+@ifhtml
+@macro hline
+@html
+<br>
+@end html
+@end macro
+@end ifhtml
+@ifnottex
+@ifnothtml
+@macro hline
+@end macro
+@end ifnothtml
+@end ifnottex
+
+@c ****************************
+@c * function printing macros *
+@c ****************************
+
+@macro func {func, args, def}
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@end multitable
+@end cartouche
+@end macro
+
+@macro funct {func, args, def, types}
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@end multitable
+@end cartouche
+@end macro
+
+@macro funce {func, args, def, example}
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax   @tab @code{\func\(\args\);}
+@hline
+@item Meaning  @tab \def\
+@hline
+@item Example  @tab @code{\example\}
+@end multitable
+@end cartouche
+@end macro
+
+@macro funcvt {func, args, funcv, argsv, def, types}
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@item            @tab @code{\funcv\(\argsv\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@end multitable
+@end cartouche
+@end macro
+
+@macro sfunc {subheading, func, args, def}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfunco {subheading, func, args, def, eqops}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{eqop} @tab @code{\eqops\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncf {subheading, func, args, def, funcs}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{func} @tab @code{\funcs\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfunct {subheading, func, args, def, types}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncv {subheading, func, args, funcv, argsv, def}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@item            @tab @code{\funcv\(\argsv\);}
+@hline
+@item Meaning    @tab \def\
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfunce {subheading, func, args, def, example}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax   @tab @code{\func\(\args\);}
+@hline
+@item Meaning  @tab \def\
+@hline
+@item Example  @tab @code{\example\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncto {subheading, func, args, def, types, eqops}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@hline
+@item @var{eqop} @tab @code{\eqops\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncot {subheading, func, args, def, eqops, types}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{eqop} @tab @code{\eqops\}
+@hline
+@item @var{Type} @tab @code{\types\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfunctf {subheading, func, args, def, types, funcs}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@hline
+@item @var{func} @tab @code{\funcs\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncte {subheading, func, args, def, types, example}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@hline
+@item Example    @tab @code{\example\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncvo {subheading, func, args, funcv, argsv, def, eqops}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@item            @tab @code{\funcv\(\argsv\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{eqop} @tab @code{\eqops\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncvf {subheading, func, args, funcv, argsv, def, funcs}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@item            @tab @code{\funcv\(\argsv\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{func} @tab @code{\funcs\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncvt {subheading, func, args, funcv, argsv, def, types}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@item            @tab @code{\funcv\(\argsv\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncvto {subheading, func, args, funcv, argsv, def, types, eqops}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@item            @tab @code{\funcv\(\argsv\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@hline
+@item @var{eqop} @tab @code{\eqops\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncvot {subheading, func, args, funcv, argsv, def, types, eqops}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@item            @tab @code{\funcv\(\argsv\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{eqop} @tab @code{\eqops\}
+@hline
+@item @var{Type} @tab @code{\types\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro sfuncvtf {subheading, func, args, funcv, argsv, def, types, funcs}
+@float
+@subheading \subheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@item            @tab @code{\funcv\(\argsv\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@hline
+@item @var{func} @tab @code{\funcs\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro ssfunce {subsubheading, func, args, def, example}
+@float
+@subsubheading \subsubheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax   @tab @code{\func\(\args\);}
+@hline
+@item Meaning  @tab \def\
+@hline
+@item Example  @tab @code{\example\}
+@end multitable
+@end cartouche
+@end float
+@end macro
+
+@macro ssfuncte {subsubheading, func, args, def, types, example}
+@float
+@subsubheading \subsubheading\
+@cartouche
+@multitable @columnfractions .15 .85
+@item Syntax     @tab @code{\func\(\args\);}
+@hline
+@item Meaning    @tab \def\
+@hline
+@item @var{Type} @tab @code{\types\}
+@hline
+@item Example    @tab @code{\example\}
+@end multitable
+@end cartouche
+@end float
+@end macro

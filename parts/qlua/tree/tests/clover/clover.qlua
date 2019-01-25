@@ -1,0 +1,109 @@
+-- completely meaningless values of parameters just to make life interesting
+
+Lx = 6
+Lt = 12
+
+L = qcd.lattice {Lx, Lx, Lx, Lt}
+
+-- get a unique number of each lattice site
+do
+  local l_s = 1
+  l_id = L:Int(0)
+  for d = 0, #L - 1 do
+    l_id = l_id + l_s * L:pcoord(d)
+    l_s = l_s * L[d]
+  end
+  S = L:RandomState(1984, l_id)
+end
+
+
+U = { S:gaussian_ColorMatrix(),
+      S:gaussian_ColorMatrix(),
+      S:gaussian_ColorMatrix(),
+      S:gaussian_ColorMatrix() }
+
+-- F = S:gaussian_DiracFermion()
+F = L:DiracFermion()
+F[{0,0,0,0,c=0,d=0}] = complex(1,0)
+
+CL = qcd.Clover(U, 0.071, 0.02, {1, 1, 1, 0})
+
+io.stdout:write("CLOVER" .. tostring(CL) .. "\n")
+
+Z = CL:D(F)
+io.stdout:write("CL:D(F)" .. tostring(Z) .. tostring(Z:norm2()) .. "\n")
+Zx = CL:Dx(F)
+io.stdout:write("CL:Dx(F)" .. tostring(Zx) .. tostring(Zx:norm2()) .. "\n")
+
+
+solve_clover = CL:solver(1e-20, 10000)
+
+io.stdout:write("solver" .. tostring(solve_clover) .. "\n")
+
+Q, eps, iters, tx, fx = solve_clover(Z)
+
+
+io.stdout:write("cg:" ..
+                 tostring(Q) .. "  " ..
+                 tostring(eps) .. " " ..
+                 tostring(iters) .. " " ..
+                 tostring(tx) .. " " ..
+                 tostring(fx) .. "\n")
+if not Q then
+   io.stderr:write("NO SOLUTION\n")
+   os.exit(1)
+end
+
+-- io.stdout:write("------ stop here now ------\n")
+-- os.exit(0)
+
+io.stdout:write("Q: " .. tostring(Q) .. " " .. tostring(Q:norm2()) .. "\n")
+io.stdout:write("F: " .. tostring(F) .. " " .. tostring(F:norm2()) .. "\n")
+io.stdout:write("Z: " .. tostring(Z) .. " " .. tostring(Z:norm2()) .. "\n")
+
+io.stdout:write("CL:solve " ..
+                tostring(eps) .. " " ..
+                tostring(iters) .. " " ..
+                tostring(tx) .. " " ..
+                tostring(fx) .. "\n")
+
+if not Q then
+    io.stdout:write("no solution found\n")
+    io.stderr:write("no solution found\n")
+    os.exit(1)
+end
+
+io.stdout:write("computed eps: " ..
+                tostring((Q - F):norm2()) .. " " ..
+                tostring(F:norm2()) .. "\n")
+io.stdout:write("DE eps: " ..
+                tostring((CL:D(Q) - Z):norm2()) .. " " ..
+                tostring(Z:norm2()) .. "\n")
+
+P = S:gaussian_DiracPropagator()
+io.stdout:write("P norm " .. 
+                tostring(P) .. " " ..
+                tostring(P:norm2()) .. "\n")
+io.stdout:write("CL(P) norm " .. tostring(CL:D(P):norm2()) .. "\n")
+
+X,eps,iters = solve_clover(P)
+
+io.stdout:write("solve-clover: " ..
+                tostring(X) .. " " ..
+                tostring(eps) .. " " ..
+                tostring(iters) .. "\n")
+
+for c = 0, #iters - 1 do
+  for d = 0, qcd.Ns - 1 do
+     io.stdout:write("prop solver: " ..
+                     tostring(c) .. " " ..
+                     tostring(d) .. " " ..
+                     tostring(eps[c+1][d+1]) .. " " ..
+                     tostring(iters[c+1][d+1]) .. "\n")
+  end
+end
+
+io.stdout:write("prop residue norm2 " ..
+                tostring((P - CL:D(X)):norm2() / P:norm2()) .. "\n")
+
+os.exit(0)

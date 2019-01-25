@@ -1,0 +1,214 @@
+\documentclass[twoside,openright,letterpaper]{article}
+\usepackage[boxed]{algorithm2e}
+\usepackage{color}
+\definecolor{darkblue}{cmyk}{1,1,0,0.7}
+\usepackage[dvipdfm,colorlinks=true,linkcolor=darkblue]{hyperref}
+\newcommand{\note}[1]{$[\![$NB: #1$]\!]$}
+\setlength{\parindent}{0pt}
+\setlength{\topmargin}{-40pt}
+\setlength{\oddsidemargin}{-16pt}
+\setlength{\evensidemargin}{-16pt}
+\setlength{\textwidth}{522pt}
+\setlength{\textheight}{670pt}
+%\setcounter{secnumdepth}{3}
+%\setcounter{tocdepth}{3}
+\newcommand{\Cee}{\texttt{C}}
+
+\title{Twisted Mass Wilson Fermions Implementation}
+\author{Andrew Pochinsky\\Sergey Syritsyn}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}\hbox{}
+\vfill
+\copyright{} 2015 Massachusetts Institute of Technology
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\pagebreak
+
+\tableofcontents
+\vfill
+\pagebreak
+
+\section{Dirac Operator}
+
+The twisted mass Wilson Dirac operator is defined by
+\begin{equation}
+\left\langle\bar\psi|D_{TW}|\psi\right\rangle =
+  \sum_{x,x'}\bar\psi(x)D_{TW}(x,x')\psi(x'),
+\end{equation}
+where
+\begin{eqnarray}
+%D_{TW}(x,x')  &= & (m_q + i \mu \gamma_5)\delta_{x,x'}  -  D_W(x,x')
+%\label{D_TW}\\
+%D_W(x,x') &=& \frac{1}{2}\sum_{\mu=0}^3\left[(1-\gamma_\mu) U_\mu(x)\delta_{x,x'-\hat\mu}
+%         +(1+\gamma_\mu) U_\mu^\dagger(x-\hat\mu)\delta_{x,x'+\hat\mu}\right]
+%\label{action-W}
+D_{TW}(x,x')  &= & (m_q + i \mu \gamma_5)\delta_{x,x'} 
+   - \frac{1}{2}\sum_{\mu=0}^3\left[(1-\gamma_\mu) U_\mu(x)\delta_{x,x'-\hat\mu}
+         +(1+\gamma_\mu) U_\mu^\dagger(x-\hat\mu)\delta_{x,x'+\hat\mu}\right]
+\label{action-W}
+\end{eqnarray}
+The library assumes that both $\kappa$ and $\mu$ are complex.
+\vfill
+\pagebreak
+\section{Gamma Matrices}
+We use the same $\gamma$-matrix basis as Chroma to simplify conversion between
+two codes. The Twisted code expects $\gamma_5$ and $\sigma_{\mu\nu}$
+to have the following values.
+
+\begin{eqnarray*}
+\gamma_0 &=& -\sigma_2 \otimes \sigma_1  =
+           \left(\begin{array}{cc}
+                0&i\sigma_1\\
+                -i\sigma_1&0
+             \end{array}\right) = 
+           \left(\begin{array}{cccc}
+                                 0&0&0&i\\
+                                 0&0&i&0\\
+                                 0&-i&0&0\\
+                                 -i&0&0&0
+                           \end{array}\right),\\
+\gamma_1 &=& \sigma_2 \otimes \sigma_2  = 
+           \left(\begin{array}{cc}
+                  0 & -i\sigma_2\\
+                  i\sigma_2 & 0
+                 \end{array}\right) = 
+           \left(\begin{array}{cccc}
+                                 0&0&0&-1\\
+                                 0&0&1&0\\
+                                 0&1&0&0\\
+                                 -1&0&0&0
+                           \end{array}\right),\\
+\gamma_2 &=& -\sigma_2 \otimes \sigma_3  = 
+           \left(\begin{array}{cc}
+                   0 & i\sigma_3\\
+                 -i\sigma_3&0
+                 \end{array}\right) = 
+           \left(\begin{array}{cccc}
+                                 0&0&i&0\\
+                                 0&0&0&-i\\
+                                 -i&0&0&0\\
+                                 0&i&0&0
+                           \end{array}\right),\\
+\gamma_3 &=& \sigma_1 \otimes 1 =
+           \left(\begin{array}{cc}
+                  0 & 1\\
+                  1 & 0
+                 \end{array}\right) = 
+           \left(\begin{array}{cccc}
+                                 0&0&1&0\\
+                                 0&0&0&1\\
+                                 1&0&0&0\\
+                                 0&1&0&0
+                           \end{array}\right),\\
+\gamma_5 &=& \gamma_0 \gamma_1 \gamma_2 \gamma_3 = \sigma_3 \otimes 1 =
+           \left(\begin{array}{cc}
+             1 & 0 \\
+             0 & -1
+           \end{array}\right) =
+           \left(\begin{array}{cccc}
+             1 & 0 & 0 & 0\\
+             0 & 1 & 0 & 0\\
+             0 & 0 &-1 & 0\\
+             0 & 0 & 0 &-1
+           \end{array}\right).
+\end{eqnarray*}
+\vfill
+\pagebreak
+\section{Preconditioning}\label{precond}
+We use four dimensional preconditioner to improve convergence of the CG.
+Let us color the lattice sites according to the
+parity of $x_0+x_1+x_2+x_3$. Then we can rewrite $D_{TW}$ from Eq.~(\ref{D_TW})
+as follows:
+\begin{equation}\label{EO-form}
+D_{TW}=\left(\begin{array}{cc}
+A_{oo} & B_{oe}\\
+B_{eo} & A_{ee}
+\end{array}\right),
+\end{equation}
+where
+\begin{eqnarray}
+A_{oo}(x,x') & = & (m_q + i \mu \gamma_5)\delta_{x,x'}, \\
+B_{oe}(x,x') & = & -\frac{1}{2}
+            \sum_{\mu=0}^{3}\left[(1-\gamma_\mu)U_\mu(x)\delta_{x,x'-\hat\mu}
+         +(1+\gamma_\mu)U_\mu^{\dagger}(x-\hat\mu)\delta_{x,x'+\hat\mu}\right],
+\end{eqnarray}
+and similary for other parity components.
+(Hereafter spinor and color indices are suppressed but presumed.)
+
+Let us rewrite Eq.~(\ref{EO-form}) as follows:
+\begin{equation}
+D_{TW}=
+\left(\begin{array}{cc}
+I_{oo} & 0\\
+B_{eo}A_{oo}^{-1} & I_{ee}
+\end{array}\right)
+\left(\begin{array}{cc}
+A_{oo} & B_{oe}\\
+0 & A_{ee}-B_{eo}A_{oo}^{-1}B_{oe}
+\end{array}\right).
+\end{equation}
+
+To solve the equation
+\[
+D_{TW}\psi=
+\left(\begin{array}{cc}
+A_{oo} & B_{oe}\\
+B_{eo} & A_{ee}
+\end{array}\right)
+\left(\begin{array}{c}\psi_e\\\psi_o\end{array}\right) =
+   \left(\begin{array}{c}\eta_e\\\eta_o\end{array}\right),
+\]
+one performs the following steps:
+\begin{enumerate}
+\item Use $M=A_{ee}-B_{eo}A_{oo}^{-1}B_{oe}$ in the
+following.
+\item Use $M^\dagger=A_{ee}^\dagger-\left(B_{oe}\right)^\dagger
+\left(A_{oo}^{-1}\right)^\dagger
+\left(B_{eo}\right)^\dagger$ in the following.
+\item Compute
+\[
+\chi_e =M^{\dagger} \left(\eta_e
+            - B_{eo}A_{oo}^{-1}\eta_o\right).
+\]
+\item Solve
+\begin{equation}
+M^{\dagger}M\psi_e = \chi_e
+\label{normal-eq}
+\end{equation}
+for $\psi_e$.
+\item Compute
+\begin{eqnarray}
+\psi_o &=& A_{oo}^{-1}\left(\eta_o-B_{oe}\psi_e\right).
+\end{eqnarray}
+\end{enumerate}
+
+Note, that computing the inverse of $A_{oo}$ is local and can be precomputed:
+\begin{eqnarray*}
+A_{oo}     &=& \left(\begin{array}{cc}X & 0 \\ 0 & Y\end{array}\right),\\
+A_{oo}^{-1} &=& \left(\begin{array}{cc}1/X & 0 \\ 0 & 1/Y\end{array}\right),\\
+X &=& m_q + i \mu, \\
+Y &=& m_q - i \mu. \\
+\end{eqnarray*}
+Here $X$ acts on two upper components of the fermion and $Y$ acts on
+two lower components.
+
+\end{document}

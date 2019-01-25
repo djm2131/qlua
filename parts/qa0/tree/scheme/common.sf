@@ -1,0 +1,67 @@
+;; Macros and generic helper functions
+#fload "sfc.sf"
+;; 
+;; (provide dbg)
+;; (provide dbg-env)
+;; (provide assert)
+;; (provide variant-type )
+;; (provide-macro define-variant)  ;; require syntax-case
+;; (provide-macro variant-case)    ;; require syntax-case
+;; (provide-macro let-values*)
+;;
+
+(define-syntax variant-case
+  (syntax-rules (else)
+    [(_ (a . d) clause ...)
+     (let ([var (a . d)]) (variant-case var clause ...))]
+    [(_ var) (ic-error 'variant-case "no clause matches ~s" var)]
+    [(_ var (else exp1 exp2 ...)) (begin exp1 exp2 ...)]
+    [(_ var (name (field ...) exp1 exp2 ...) clause ...)
+     (if (#&(string->id #&(string-append #&(id->string name) "?")) var)
+         (let ([field (#&(string->id #&(string-append #&(id->string name) "->" #&(id->string field))) var)] ...)
+           exp1 exp2 ...)
+         (variant-case var clause ...))]))
+
+(define-syntax define-variant
+  (syntax-rules ()
+    [(_ name () ([field0 index0] ...))
+     (begin
+       (define-syntax #&(string->id #&(string-append "make-"
+						     #&(id->string name)))
+         (lambda (field0 ...)
+           (vector 'name field0 ...)))
+       (define-syntax #&(string->id #&(string-append #&(id->string name) "?"))
+         (lambda (object)
+           (and (vector? object)
+             (= (vector-length object) #&(length (name field0 ...)))
+             (eq? (vector-ref object 0) 'name))))
+       (define-syntax #&(string->id #&(string-append "set-"
+						     #&(id->string name)
+						     "-"
+						     #&(id->string field0)
+						     "!"))
+	 (lambda (object value)
+	   (vector-set! object index0 value)))
+       ...
+       (define-syntax #&(string->id #&(string-append #&(id->string name)
+						     "->"
+						     #&(id->string field0)))
+         (lambda (object)
+           (vector-ref object index0)))
+       ...)]
+    [(_ name (field0 field ...) (pair ...))
+     (define-variant name (field ...)  (pair ... [field0 #&(length (name pair ...))]))]
+    [(_ name (field0 ...))
+     (define-variant name (field0 ...) ())]))
+
+(define-syntax let-values*
+  (syntax-rules ()
+    [(_ () . body)
+     (let () . body)]
+    [(_ ([(n ...) i ...]) e ...)
+     (receive (n ...) (let () i ...)
+       (let () e ...))]
+    [(_ ([n i ...]) e ...)
+     (let ([n (let () i ...)]) e ...)]
+    [(_ (b0 b1 ...) e ...)
+     (let-values* (b0) (let-values* (b1 ...) e ...))]))

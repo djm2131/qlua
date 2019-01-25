@@ -1,0 +1,27 @@
+;; compute r = 1/A* x
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+(include "defs-A.qa0")
+
+(procedure do-1/A* ([stem "do_A_conj_inverse"]
+                    prec&color
+                    count-flops)
+       ([res-x     pointer   "res_x"    "struct Fermion *"         ]
+        [start     int       "start"    "size_t"                   ]
+        [size      int       "size"     "size_t"                   ]
+        [l-s       int       "Ls"       "size_t"                   ]
+        [p-table   pointer   "p_table"  "const struct ABiTable *"  ]
+        [m-table   pointer   "m_table"  "const struct ABiTable *"  ]
+        [src-x     pointer   "src_x"    "const struct Fermion *"   ])
+  (op int-mul () (s-f-line) ([reg l-s] [const (size-of Fermion)]))
+  (op int-sub () (s-1-size) ([reg s-f-line] [const (size-of Fermion)]))
+  (op int-mul () (start*ls) ([reg start] [reg l-s]))
+  (op int-mul () (offset-x) ([reg start*ls] [const (size-of Fermion)]))
+  (op pointer-add () (res-x) ([reg res-x] [reg offset-x]))
+  (op pointer-add () (src-x) ([reg src-x] [reg offset-x]))
+  (loop () (i [const 0] [reg size])
+    (macro S-compute-1/A* [reg res-x] [reg l-s] [reg s-1-size]
+                          [reg p-table] [reg m-table] [reg src-x])
+    (op pointer-add () (src-x) ([reg src-x] [reg s-f-line]))
+    (op pointer-add () (res-x) ([reg res-x] [reg s-f-line]))))

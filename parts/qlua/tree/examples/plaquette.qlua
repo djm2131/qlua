@@ -1,0 +1,12 @@
+-- compute ij plaquette on each lattice site
+
+function plaquette(i, j, U)
+   assert(i >= 0 and i < #U, "plaquette index out of range")
+   assert(j >= 0 and j < #U, "plaquette index out of range")
+   assert(not i == j, "collapsed plaquette")
+
+   return U[i+1] *
+          U[j+1]:shift(i, "from_forward") *
+          U[i+1]:shift(j, "from_forward"):adjoin() *
+          U[j+1]:adjoin()
+end

@@ -1,0 +1,40 @@
+(include "types.qa0")
+
+;; F memory order:
+;;   0th index: lattice index
+;;   1st index: vector of fermions
+;;  fv[0][0]
+;;  fv[1][0]
+;;  ....
+;;  fv[size-1][0]
+;;  ::::: stride slack
+;;  fv[0][1]
+;;  ....
+;;
+(procedure fv-dot-zv ([stem "vf_dot_vz"]
+                   prec&color
+                   count-flops)
+           ([size      int     "size"      "size_t"                  ]
+            [G         pointer "G"         "struct FermionX *"       ]
+            [F         pointer "F"         "const struct vFermion *" ]
+            [fv-stride int     "fv_stride" "size_t"                  ]
+            [fv-begin  int     "fv_begin"  "size_t"                  ]
+            [fv-len    int     "fv_len"    "size_t"                  ]
+            [V         pointer "V"         "const double *"          ])
+   (op int-mul () (f-offset) ([reg fv-begin] [reg fv-stride]))
+   (op pointer-add () (F) ([reg F] [reg f-offset]))
+   (loop () (i [const 0] [reg size])
+     (op qcd-zerof () (x) ())
+     (op pointer-move () (F-c) ([reg F]))
+     (op pointer-move () (z-c) ([reg V]))
+     (loop () (c [const 0] [reg fv-len])
+       (load qcd-fermion () v-F ([reg F-c]))
+       (load double () r-r ([reg z-c]))
+       (load double () r-i ([reg z-c] [const (size-of double)]))
+       (op complex () (z) ([reg r-r] [reg r-i]))
+       (op pointer-add () (F-c) ([reg F-c] [reg fv-stride]))
+       (op pointer-add () (z-c) ([reg z-c] [const (* 2 (size-of double))]))
+       (op qcd-cmaddf () (x) ([reg x] [reg z] [reg v-F])))
+     (store qcd-fermion () ([reg G]) [reg x])
+     (op pointer-add () (F) ([reg F] [const (size-of Fermion)]))
+     (op pointer-add () (G) ([reg G] [const (size-of Fermion)]))))

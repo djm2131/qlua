@@ -1,0 +1,17 @@
+#!/bin/sh
+
+USQCDDIST=$HOME/Local/packages/macosx-20160127
+Nc=3
+targets="bgq/xlc cee-64"
+
+[ -d doc ] || mkdir doc
+utils/setup-nc $Nc
+make NC="$Nc" -C noweb
+make NC="$Nc" -C noweb clean
+make NC="$Nc" -C qa0 TARGETS="$targets" 
+./configure \
+   --prefix=$HOME/Local/packages/clover-working \
+   --target=cee-64 \
+   --with-qdp=$USQCDDIST/qdp \
+   --with-qmp=$USQCDDIST/qmp \
+   --with-gsl=$USQCDDIST/gsl

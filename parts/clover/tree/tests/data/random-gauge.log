@@ -1,0 +1,33 @@
+Linkage = 0
+InlineMeasurements are: 
+<InlineMeasurements>
+   <elem>
+     <Name>QIO_WRITE_NAMED_OBJECT</Name>
+     <Frequency>1</Frequency>
+     <NamedObject>
+       <object_id>default_gauge_field</object_id>
+       <object_type>Multi1dLatticeColorMatrixD</object_type>
+     </NamedObject>
+     <File>
+       <file_name>random-gauge</file_name>
+       <file_volfmt>SINGLEFILE</file_volfmt>
+     </File>
+   </elem>
+
+    </InlineMeasurements>
+
+Finished init of RNG
+Finished lattice layout
+Attempt to read gauge field
+Gauge initialization: cfg_type = WEAK_FIELD
+Starting up a weak field config
+Gauge field successfully read: time= 0.224319 secs
+There are 1 measurements 
+Doing 1 measurements
+QIO_WRITE_NAMED_OBJECT: object writer
+Attempt to write object name = default_gauge_field
+Object successfully written: time= 0.104512 secs
+QIO_WRITE_NAMED_OBJECT: ran successfully
+CHROMA measurements: time= 0.104623 secs
+CHROMA: total time = 0.727776 secs
+CHROMA: ran successfully

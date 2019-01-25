@@ -1,0 +1,3 @@
+(procedure test-op ([stem "xx"] [return v int "int"])
+       ()
+   (op int-move () (v) ([const (size-of Clover)])))

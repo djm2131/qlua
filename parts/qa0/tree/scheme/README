@@ -1,0 +1,2 @@
+This directory contains Scheme sources for the qa0. Files here are used to build
+the distribution. A #F installation is required to build .c files.

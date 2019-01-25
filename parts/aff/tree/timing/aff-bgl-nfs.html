@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>AFF benchmarks: MIT BG/L NFS</title>
+  <meta name="generator" content="Amaya, see http://www.w3.org/Amaya/" />
+</head>
+
+<body>
+<h1 style="text-align: center;">MIT BG/L NFS</h1>
+<table cellpadding="2" cellspacing="2" border="0" width="40%">
+  <tbody>
+    <tr>
+      <td><b>Host</b></td>
+      <td><code>bglsn.bgl</code></td>
+    </tr>
+    <tr>
+      <td><b>Architecture</b></td>
+      <td>4 nodes ppc64 power5 1.65 GHz</td>
+    </tr>
+    <tr>
+      <td><b>Memory</b></td>
+      <td>16 GB</td>
+    </tr>
+    <tr>
+      <td><b>Kernel</b></td>
+      <td>2.6.5 SLES 9 distribution</td>
+    </tr>
+    <tr>
+      <td><b>Filesystem</b></td>
+      <td>NFS</td>
+    </tr>
+    <tr>
+      <td><b>Data element</b></td>
+      <td>64 complex numbers (1024 bytes)</td>
+    </tr>
+  </tbody>
+</table>
+<br />
+
+<table cellpadding="2" cellspacing="0" border="1" width="100%">
+  <tbody>
+    <tr>
+      <td align="center" colspan="2">Size</td>
+      <td align="center" colspan="2">AFF check</td>
+      <td align="center" colspan="2">AFF open</td>
+      <td align="center" colspan="2">AFF merge</td>
+    </tr>
+    <tr>
+      <td align="center">Data, elems</td>
+      <td align="center">File, bytes</td>
+      <td align="center">wall time, sec</td>
+      <td align="center">user time, sec</td>
+      <td align="center">wall time, sec</td>
+      <td align="center">user time, sec</td>
+      <td align="center">wall time, sec</td>
+      <td align="center">user time, sec</td>
+    </tr>
+    <tr>
+      <td align="right">18,816</td>
+      <td align="right">19,989,362</td>
+      <td align="right">1.68</td>
+      <td align="right">1.63</td>
+      <td align="right">0.18</td>
+      <td align="right">0.17</td>
+      <td align="right">7.36</td>
+      <td align="right">6.40</td>
+    </tr>
+    <tr>
+      <td align="right">37,632</td>
+      <td align="right">39,975,834</td>
+      <td align="right">3.40</td>
+      <td align="right">3.30</td>
+      <td align="right">0.38</td>
+      <td align="right">0.37</td>
+      <td align="right">14.48</td>
+      <td align="right">12.92</td>
+    </tr>
+    <tr>
+      <td align="right">75,264</td>
+      <td align="right">79,948,766</td>
+      <td align="right">6.76</td>
+      <td align="right">6.58</td>
+      <td align="right">0.77</td>
+      <td align="right">0.75</td>
+      <td align="right">28.76</td>
+      <td align="right">25.71</td>
+    </tr>
+    <tr>
+      <td align="right">150,528</td>
+      <td align="right">159,894,630</td>
+      <td align="right">13.66</td>
+      <td align="right">13.29</td>
+      <td align="right">1.55</td>
+      <td align="right">1.52</td>
+      <td align="right">55.44</td>
+      <td align="right">52.07</td>
+    </tr>
+    <tr>
+      <td align="right">301,056</td>
+      <td align="right">319,786,358</td>
+      <td align="right">27.15</td>
+      <td align="right">26.39</td>
+      <td align="right">3.19</td>
+      <td align="right">3.11</td>
+      <td align="right">108.62</td>
+      <td align="right">103.84</td>
+    </tr>
+    <tr>
+      <td align="right">602,112</td>
+      <td align="right">639,569,814</td>
+      <td align="right">54.67</td>
+      <td align="right">53.13</td>
+      <td align="right">6.44</td>
+      <td align="right">6.28</td>
+      <td align="right">217.40</td>
+      <td align="right">208.22</td>
+    </tr>
+    <tr>
+      <td align="right">1,204,224</td>
+      <td align="right">1,279,136,726</td>
+      <td align="right">109.23</td>
+      <td align="right">106.18</td>
+      <td align="right">13.14</td>
+      <td align="right">12.89</td>
+      <td align="right">436.72</td>
+      <td align="right">419.84</td>
+    </tr>
+    <tr>
+      <td align="right">2,408,448</td>
+      <td align="right">2,558,270,550</td>
+      <td align="right">222.65</td>
+      <td align="right">216.57</td>
+      <td align="right">27.74</td>
+      <td align="right">27.14</td>
+      <td align="right">879.58</td>
+      <td align="right">847.37</td>
+    </tr>
+    <tr>
+      <td align="right">4,816,896</td>
+      <td align="right">5,116,538,198</td>
+      <td align="right">477.17</td>
+      <td align="right">433.95</td>
+      <td align="right">60.86</td>
+      <td align="right">59.68</td>
+      <td align="right">1,779.96</td>
+      <td align="right">1,713.57</td>
+    </tr>
+    <tr>
+      <td align="right">9,633,792</td>
+      <td align="right">10,233,073,494</td>
+      <td align="right">2,416.23</td>
+      <td align="right">873.20</td>
+      <td align="right">127.11</td>
+      <td align="right">124.43</td>
+      <td style="background-color: #993300;"></td>
+      <td style="background-color: #993300;"></td>
+    </tr>
+    <tr>
+      <td align="right">19,267,584</td>
+      <td align="right">20,466,144,086</td>
+      <td style="background-color: #993300;"></td>
+      <td style="background-color: #993300;"></td>
+      <td style="background-color: #993300;"></td>
+      <td style="background-color: #993300;"></td>
+      <td style="background-color: #cccccc;"></td>
+      <td style="background-color: #cccccc;"></td>
+    </tr>
+  </tbody>
+</table>
+<br />
+<table cellpadding="5" cellspacing="2" border="0" width="95%">
+<tr>
+   <td style="background-color: #993300;">&nbsp;</td>
+   <td align="left">Test did not run because of system limitations</td>
+</tr>
+<tr>
+   <td style="background-color: #cccccc;">&nbsp;</td>
+   <td align="left">No data</td>
+</tr>
+</table>
+</body>
+</html>

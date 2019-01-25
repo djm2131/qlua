@@ -1,0 +1,14 @@
+(include "types.qa0")
+
+(procedure put-twisted ([stem "put_twisted"]
+                        color)
+           ([tw        pointer "tw"        "struct Twisted *"  ]
+            [x-re      double  "x_re"      "double"            ]
+            [x-im      double  "x_im"      "double"            ]
+            [y-re      double  "y_re"      "double"            ]
+            [y-im      double  "y_im"      "double"            ])
+
+   (store double () ([reg tw] [const (offset-of twist x-re)]) [reg x-re])
+   (store double () ([reg tw] [const (offset-of twist x-im)]) [reg x-im])
+   (store double () ([reg tw] [const (offset-of twist y-re)]) [reg y-re])
+   (store double () ([reg tw] [const (offset-of twist y-im)]) [reg y-im]))

@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+
+
+<chroma>
+  <Input><chroma>
+  <Param>
+    <InlineMeasurements>
+   <elem>
+     <Name>QIO_WRITE_NAMED_OBJECT</Name>
+     <Frequency>1</Frequency>
+     <NamedObject>
+       <object_id>default_gauge_field</object_id>
+       <object_type>Multi1dLatticeColorMatrixD</object_type>
+     </NamedObject>
+     <File>
+       <file_name>random-gauge</file_name>
+       <file_volfmt>SINGLEFILE</file_volfmt>
+     </File>
+   </elem>
+
+    </InlineMeasurements>
+    <nrow>8
+          8
+          8
+          16</nrow>
+  </Param>
+  <Cfg>
+    <cfg_type>WEAK_FIELD</cfg_type>
+    <cfg_file>dummy</cfg_file>
+  </Cfg>
+</chroma>
+
+  </Input>
+  <ProgramInfo>
+    <code_version>
+      <chroma>3.23.0_patch1_1</chroma>
+      <qdp>1.23.0</qdp>
+    </code_version>
+    <run_date>17 Apr 09 10:46:33 CDT</run_date>
+    <Setgeom>
+      <latt_size>8 8 8 16</latt_size>
+      <logical_size>1 1 1 1</logical_size>
+      <subgrid_size>8 8 8 16</subgrid_size>
+      <total_volume>8192</total_volume>
+      <subgrid_volume>8192</subgrid_volume>
+    </Setgeom>
+  </ProgramInfo>
+  <RNG>
+    <Seed>
+      <elem>11</elem>
+      <elem>0</elem>
+      <elem>0</elem>
+      <elem>0</elem>
+    </Seed>
+  </RNG>
+  <Config_info><weak_field>
+</weak_field>
+
+  </Config_info>
+  <Observables>
+    <w_plaq>0.994744326984528</w_plaq>
+    <s_plaq>0.994724490305996</s_plaq>
+    <t_plaq>0.99476416366306</t_plaq>
+    <plane_01_plaq>0.994707260617779</plane_01_plaq>
+    <plane_02_plaq>0.994735524647891</plane_02_plaq>
+    <plane_12_plaq>0.994730685652317</plane_12_plaq>
+    <plane_03_plaq>0.994805227470329</plane_03_plaq>
+    <plane_13_plaq>0.994711662661999</plane_13_plaq>
+    <plane_23_plaq>0.994775600856854</plane_23_plaq>
+    <link>0.37933912763171</link>
+    <pollp>
+      <elem>
+        <re>0.880751978225936</re>
+        <im>-0.00954354668478568</im>
+      </elem>
+      <elem>
+        <re>0.881114032079749</re>
+        <im>-0.00946186202040997</im>
+      </elem>
+      <elem>
+        <re>0.880522872700768</re>
+        <im>-0.00961063746755403</im>
+      </elem>
+      <elem>
+        <re>0.584387506305069</re>
+        <im>-0.0672630250295217</im>
+      </elem>
+    </pollp>
+  </Observables>
+  <InlineObservables>
+    <elem>
+      <qio_write_named_obj>
+        <update_no>0</update_no>
+        <object_id>default_gauge_field</object_id>
+      </qio_write_named_obj>
+    </elem>
+  </InlineObservables>
+</chroma>

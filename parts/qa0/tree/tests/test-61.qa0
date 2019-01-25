@@ -1,0 +1,7 @@
+(procedure X-rmul ([stem "X"] count-flops)
+           ([dst  pointer   "dst"      "void *"]
+            [s    double    "scale"    "double"]
+            [src  pointer   "src"      "void *"])
+   (load COMPLEX () x ([reg src]))
+   (op complex-rmul () (y) ([reg s] [reg x]))
+   (store COMPLEX () ([reg dst]) [reg x]))

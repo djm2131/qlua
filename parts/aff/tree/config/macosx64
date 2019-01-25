@@ -1,0 +1,61 @@
+# This file is included into GNU Make file.
+#
+# Our build C compiler. It should support enough of C99.
+CC=gcc -m64 -g -std=c99
+#
+# To build applications on top of the AFF library, one calls the following
+# compiler. It might be different from the build compiler.
+install.CC=$(CC)
+#
+# Build C flags.
+# HAS_INTEGRAL_OFF_T is set if off_t is compatible with uint64_t on assignment.
+# AFF_DEBUG is set if internal stess are needed for debugging. This makes code
+#           slow.
+# _POSIX_C_SOURCE is needed to make gcc aware of some POSIX functions.
+# _LARGEFILE_SOURCE is needed to work with files larger than 2GB.
+# _FILE_OFFSET_BITS=64 is needed work with files larger than 2GB.
+CFLAGS=-Wall -O2 -DHAS_INTEGRAL_OFF_T \
+                 -D_POSIX_C_SOURCE \
+                 -D_LARGEFILE_SOURCE \
+                 -D_FILE_OFFSET_BITS=64
+#
+# C++ compiler and flags
+CXX = gcc -m64
+CXXFLAGS = $(CFLAGS) -I.
+#
+# To build applications on top of the AFF library, one needs to pass
+# the following flags to the compiler.
+# Do not place the location of the installed headers here. It will be added
+# during the install process.
+install.CFLAGS=
+#
+# Extra libraries that are needed by AFF.
+install.LIBS=
+#
+# If extra flags are needed during the linking phase, add them here
+install.LDFLAGS=
+#
+# The librarian.
+AR=ar
+#
+# On some platform, a ranlib is required to make a library accessible.
+RANLIB=ranlib
+#
+# Where to install
+prefix=$$HOME/lhpc
+#
+# By default, binaries go into $(prefix)/bin. If you want to select
+# another distination, set prefix_bin.
+#prefix_bin=$(prefix)/bin
+#
+# By default, C headers go into $(prefix)/include. If you want to select
+# another distination, set prefix_include.
+#prefix_include=$(prefix)/include
+#
+# By default, libraries go into $(prefix)/lib. If you want to select
+# another distination, set prefix_lib.
+#prefix_lib=$(prefix)/lib
+#
+# By default, documentation goes into $(prefix)/doc. If you want to select
+# another distination, set prefix_doc.
+#prefix_doc=$(prefix)/doc

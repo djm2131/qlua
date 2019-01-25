@@ -1,0 +1,8 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+
+(procedure size-of-neighbor ([stem "sizeof_neighbor"]
+                             [return total int "size_t"])
+           ([volume    int "volume"     "size_t"])
+   (op int-mul () (total) ([reg volume] [const (size-of neighbor)])))

@@ -1,0 +1,498 @@
+2015-06-04:	James Osborn
+	Fixes to staggered and DW solvers.
+	Added version routines.
+
+2015-03-21:	James Osborn
+	Added OpenMP threading to parts not covered by QLA.
+    	Set large QDP block size if compiled with OpenMP.
+    	Added initial qll support.
+
+===========================================================================
+2014-09-08      version 0.20.0
+===========================================================================
+2014-08-05:	James Osborn
+	Added mixed precision QOP_create_G_from_qdp.
+
+2014-07-29:	James Osborn
+	Added QOP_asqtad_create_L_from_G2 with separate fat and long gauge.
+
+===========================================================================
+2014-05-12      version 0.19.4
+===========================================================================
+2014-04-10:	James Osborn
+	Made multigrid setup rerunnable.
+	Changed verbose output in asqtad solver.
+
+2014-04-05:	James Osborn
+	Added new more stable mixed precision version of asqtad solver.
+	Made clover term and wilson multigrid work for any Nc.
+
+2014-01-30:	James Osborn
+	Fixed inner rsq request calculation in asqtad solver.
+
+2014-01-16:	James Osborn
+	Added U(1) gauge heatbath from Alexei.
+
+===========================================================================
+2013-10-29      version 0.19.3
+===========================================================================
+2013-10-29:	James Osborn
+	Removed unused su3reunit from hisq_links_p.c.
+	Finished adding gauge heatbath.
+	Changed gauge_*_qdp API to not use QOP_GaugeField.
+
+===========================================================================
+2013-10-26      version 0.19.2
+===========================================================================
+2013-10-26:	James Osborn
+	Added Nc=1 library.
+	Fixed compiling with --enable-nc=3.
+	Started adding gauge heatbath.
+
+===========================================================================
+2013-09-06      version 0.19.1
+===========================================================================
+2013-09-02:	James Osborn
+	Fixed wilson force declarations.
+
+2013-05-27:	James Osborn
+	Increased QOP_MAX_NAIK to 20.
+	Fixed Wilson and gauge flop counts for arbitrary Nc.
+	Added QOP_info_t to QOP_staples and _deriv.
+
+===========================================================================
+2013-04-16      version 0.19.0
+===========================================================================
+2013-04-16:	James Osborn
+	Initial checkin of Wilson MG code.
+
+2013-03-22:	James Osborn
+	Added adjoint plaquette to gauge action.
+
+===========================================================================
+2013-03-19      version 0.18.5
+===========================================================================
+2013-03-19:	James Osborn
+	Added *_ZERO initializers for many structures.
+
+2013-03-02:	James Osborn
+	Fixed crash in staples deriv.
+
+2013-02-21:	James Osborn
+	Added generic staples routine and derivative.
+
+2013-02-07:	James Osborn
+	Some fixes to asqtad routines.
+
+2013-01-10:	James Osborn
+	Fixed fat7 derivative routine.
+
+===========================================================================
+2012-12-19      version 0.18.4
+===========================================================================
+2012-12-19:	James Osborn
+	Added Nc='N' color versions of routines.
+
+===========================================================================
+2012-12-03      version 0.18.3
+===========================================================================
+2012-12-03:	James Osborn
+	Exposed fat7 smearing and other small changes.
+
+===========================================================================
+2012-11-21      version 0.18.2
+===========================================================================
+2012-11-21:	Carleton DeTar
+        Added Oktay-Kronfeld (OK) Wilson-type action (IFLA) from Bugra Oktay
+        Removed inconsistent code and declarations from wilson_invert.c.
+
+===========================================================================
+2012-11-01      version 0.18.1
+===========================================================================
+2012-11-01:	James Osborn
+	Started gauge smearing/force infrastructure.
+
+===========================================================================
+2012-08-13      version 0.18.0
+===========================================================================
+2012-08-13:	James Osborn
+	Changed build structure and added Nc=2 routines.
+
+===========================================================================
+2012-04-11      version 0.17.7
+===========================================================================
+2012-04-11:	Carleton DeTar
+	Added QOP_FD3_asqtad_create_L_from_L in asqtad_dslash.c for 
+         convenience.
+
+===========================================================================
+2012-04-04      version 0.17.6
+===========================================================================
+2012-04-04:	James Osborn
+	Added optional HISQ fat7_lepage term.
+
+===========================================================================
+2011-12-04      version 0.17.5
+===========================================================================
+2011-12-04:	James Osborn
+  	Added QDP layout using QMP logical topology to be used if
+	  QDP is not already initialized.
+	Fixed some flop counts in HISQ force.
+	Added some derivative routines.
+
+2011-12-03:	Carleton DeTar
+	Further corrections to SVD and force filter counting
+
+2011-11-24:	Carleton DeTar
+	Add HISQ flop count for fermion force and refine Wilson invert
+	 relative norm stopping
+
+2011-11-13:	Carleton DeTar
+	Corrected bug in copy from double- to single-precision
+	 FermionLinksWilson structure
+
+2011-11-04:	Carleton DeTar
+	Updates to HISQ utilities
+
+===========================================================================
+2011-09-16      version 0.17.2
+===========================================================================
+2011-09-16:	James Osborn
+  	Added some qdp variants of functions.
+
+2011-08-28:	James Osborn
+  	Added gauge action, new version of gauge force.
+
+===========================================================================
+2011-08-26      version 0.17.1
+===========================================================================
+2011-08-26:	James Osborn
+        Added new fat-force routine used in asqtad and HISQ force.
+
+2011-08-17:	James Osborn
+	Fixed HISQ routines to use QLA macros throughout.
+	Changed inverter stopping criterion to rsqmin _or_ relmin.
+
+2011-05-12:	James Osborn
+	Made asqtad link fattening ignore staples with coefficient of 0.
+
+===========================================================================
+2011-08-11      version 0.17.0
+===========================================================================
+2011-08-11:	Carleton DeTar
+	Reorganized the HISQ interface
+        Modified the internal storage of HISQ links.
+	Added HISQ fermion force from Alan Gray and Alexei Bazavov
+        Removed separate HISQ inverter. Link creation moved to hisq_links*.c.
+        HISQ unitarization always done in double precision now.
+	Added some fermion link linear algebra utilities
+
+2011-02-23:	James Osborn
+	Changed HISQ reunit to U3 since phases aren't known.
+
+===========================================================================
+2011-01-08      version 0.16.4
+===========================================================================
+2011-01-08:	James Osborn
+	Added more _qdp functions.
+	Fixed bug in creating asqtad links when longlinks==NULL.
+
+2010-05-24:	James Osborn
+	Made scalars in solvers be double precision.
+
+===========================================================================
+2010-03-26      version 0.16.3
+===========================================================================
+2010-03-26:	James Osborn
+	Fix even/odd reconstruction.
+
+2010-03-26:	Saul Cohen
+	Fixed even/odd preconditioning for DW inverter.
+
+===========================================================================
+2010-03-19      version 0.16.2
+===========================================================================
+2010-03-19:	James Osborn
+	Benchmarks now average performance over all nodes.
+
+2010-03-19:	Saul Cohen
+	Fixed DW inverter.
+
+===========================================================================
+2010-02-21      version 0.16.1
+===========================================================================
+2010-02-18:	James Osborn
+	Added checks for breakdown in BiCGStab inverter.
+
+2010-02-18:	James Osborn
+	Fixed bugs in DW inverter.  Added default initializers for invert
+ 	and resid args.
+
+2010-02-17:     Saul Cohen
+        Restructured domain-wall functions to eliminate some problems with
+        uninitialized temporaries.
+
+===========================================================================
+2010-01-24      version 0.16.0
+===========================================================================
+2010-01-24:     Carleton DeTar
+        Add support for Fermilab relative norm stopping criterion 
+        for CG and BiCG.  Adds two new members to QOP_resid_arg_t.
+
+===========================================================================
+2009-09-11      version 0.15.0
+===========================================================================
+2009-09-11:	James Osborn
+	Added interface for DW dslash.
+
+===========================================================================
+2009-07-17      version 0.14.0 (unreleased)
+===========================================================================
+2009-07-17	Carleton DeTar
+ 	Added Alan Gray's HISQ force routines (untested)
+	Added precision conversion copy for Wilson fermion links object
+	Fixed asqtad_dslash pointer bug
+
+2009-06-03:	James Osborn
+	Optimized asqtad dslash for case when naik=0.
+
+===========================================================================
+2009-04-15      version 0.13.0
+===========================================================================
+2009-04-15:	James Osborn
+	Added missing rephase functions.
+	Added raw set/get accessor macros.
+
+===========================================================================
+2009-02-07      version 0.12.0
+===========================================================================
+2009-01-24:	James Osborn
+	Added Bugra's clover term generation code.
+	Changed QOP_wilson_coeffs_t to allow anisotropic clover term.
+
+2009-01-11:	James Osborn
+	Fixed name conflict in invert_cg_blas_p.c.
+
+===========================================================================
+2009-01-04      version 0.11.6
+===========================================================================
+2009-01-04:	James Osborn
+	Bug fix in asqtad inverter for QOP_EVENODD source.
+
+===========================================================================
+2008-06-23      version 0.11.5
+===========================================================================
+2008-06-22:	James Osborn
+	Improve inner rsq request in asqtad inverter.
+	More changes to eigCG.
+
+2008-06-06:	James Osborn
+	Added linalg.h to Makefile.am.
+
+===========================================================================
+2008-06-03      version 0.11.4
+===========================================================================
+2008-06-03:	James Osborn
+	Added --enable-underscores option for linking with blas/lapack.
+	Correct for factor of 1/2 in creation of HISQ links.
+
+2008-06-02:	James Osborn
+	Added --enable-blas and --enable-lapack configure options which
+	enable blas based CG and eigCG codes.
+	Fixed memory leak in HISQ code.
+
+===========================================================================
+2008-06-02      version 0.11.3
+===========================================================================
+2008-06-02:	Carleton DeTar
+	Added HISQ inverter by Alan Gray.
+
+===========================================================================
+2008-04-14      version 0.11.2
+===========================================================================
+2008-04-14:	James Osborn
+	Now make sure QOP is initialized before using.
+
+2008-04-12:	James Osborn
+	Fix to clover term.
+
+===========================================================================
+2008-04-12      version 0.11.1
+===========================================================================
+2008-04-12:	James Osborn
+	Fixed up clover term, should now be usable if passed in.
+
+2008-04-08:	James Osborn
+	Initial version of blas based CG, disabled for now.
+	Now initializes asqtad inverter when options are set.
+
+===========================================================================
+2008-04-07      version 0.11.0
+===========================================================================
+2008-04-07:	James Osborn
+	Udated to work with QDP 1.8.0.  Requires QDP version >= 1.8.0.
+
+2007-12-06:	James Osborn
+	Added eigCG routine, disabled for now.
+
+===========================================================================
+2007-11-17      version 0.10.1
+===========================================================================
+2007-11-09:	James Osborn
+	Bug fixes for asqtad inverter.
+
+===========================================================================
+2007-10-30      version 0.10.0
+===========================================================================
+2007-10-30:	James Osborn
+	Added named verbosity levels.
+	Added some inverter output when verbosity is set.
+	Fixed some alignment problems in test programs.
+
+2007-10-29:	James Osborn
+	Fixed asqtad multimass inverter to use updated conventions.
+	Added final_restart value to resid_arg_t struct.
+	Made returned residual be divided by the norm of the input vector.
+
+===========================================================================
+2007-09-19      version 0.9.0
+===========================================================================
+2007-07-16:	James Osborn
+	Exposed asqtad Dslash and changed conventions for asqtad inverter.
+
+===========================================================================
+2007-05-24      version 0.8.1
+===========================================================================
+2007-05-10:	James Osborn
+	Made all non-external functions in asqtad_force_p.c static.
+
+2007-04-22:	James Osborn
+	Fixed bicgstab to update nrestarts.
+	Avoid int overflow in asqtad_force_fnmat flop calculation.
+
+===========================================================================
+2007-04-05      version 0.8.0
+===========================================================================
+2007-04-05:	James Osborn
+	Added Wilson dslash routines.
+
+===========================================================================
+2007-02-03      version 0.7.8
+===========================================================================
+2007-02-03:	James Osborn
+	Fixed asqtad 2 src inverter.
+
+2007-02-01:	James Osborn
+	Added max_restarts field to QOP_invert_arg_t struct and updated
+	comments to reflect true meaning.
+
+===========================================================================
+2006-12-15      version 0.7.7
+===========================================================================
+2006-12-15:	Carleton Detar
+	Added FNMAT asqtad force option.
+
+2006-12-14:	James Osborn
+	Fixed restarting shifts in dw inverter.
+
+===========================================================================
+2006-12-14      version 0.7.6
+===========================================================================
+2006-12-13:	James Osborn
+	Added preconditioner to DW inverter.
+
+2006-12-11:	James Osborn
+	Changed stopping condition in asqtad 2 source to agree with MILC.
+
+===========================================================================
+2006-11-21      version 0.7.5
+===========================================================================
+2006-11-21:	James Osborn
+	Fixed multimass inverter.  Improved asqtad link loading.
+
+===========================================================================
+2006-11-17      version 0.7.4
+===========================================================================
+2006-11-17:	James Osborn
+	Added true multimass and 2 source inverter for asqtad.
+
+===========================================================================
+2006-11-15      version 0.7.3
+===========================================================================
+2006-11-15:	James Osborn
+	Fixed memory leak in asqtad inverter.
+
+===========================================================================
+2006-10-30      version 0.7.2
+===========================================================================
+2006-10-30:	James Osborn
+	Changed meaning of eps parameter to gauge force.
+	Added gauge loading functions.
+
+===========================================================================
+2006-09-26      version 0.7.1
+===========================================================================
+2006-09-26:	James Osborn
+	Added gauge force code.
+
+2006-08-03:     James Osborn
+	Fixed int overflow in asqtad force flops calculation.
+
+===========================================================================
+2006-06-25      version 0.7.0
+===========================================================================
+2006-06-25:     James Osborn
+	Updated API to new standard.
+	Changed gamma sign conventions to work with QLA-1.6.0.
+	Must use QLA >= 1.6.0 now in order to agree with Chroma.
+
+2006-05-04:     James Osborn
+        Added check for lattice size consistency in init.
+
+===========================================================================
+2006-05-04      version 0.6.5
+===========================================================================
+2006-04-23:     James Osborn
+        Fixed wrong result in Wilson inverter.
+
+===========================================================================
+2006-04-15      version 0.6.4
+===========================================================================
+2006-04-15:     James Osborn
+        Made asqtad and wilson inverters reuse shifts better.
+
+===========================================================================
+2006-04-14      version 0.6.3
+===========================================================================
+2006-04-11:     James Osborn
+        Fixed memory leak in Wilson inverter.
+
+===========================================================================
+2006-03-14      version 0.6.2
+===========================================================================
+2006-03-03:     James Osborn
+        Added domain wall code.
+        Verified dw and Wilson code against chroma.
+
+===========================================================================
+2006-02-09      version 0.6.1
+===========================================================================
+2006-02-09:     James Osborn
+        Updates to Wilson code.
+
+===========================================================================
+2006-02-03      version 0.6.0
+===========================================================================
+2006-02-02:     James Osborn
+        Updated interface for Wilson code.
+
+===========================================================================
+2005-09-29      version 0.5.0
+===========================================================================
+2005-09-29      James Osborn
+        Updated headers to new SciDAC standard.
+
+===========================================================================
+2005-08-26      James Osborn
+        Added to CVS.
+===========================================================================

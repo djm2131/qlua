@@ -1,0 +1,39 @@
+(verbose [(c99 bgl/xlc) "/* $Id$ */"])
+
+(include "types.qa0")
+(include "defs-spin.qa0")
+
+(repeat ((d [const 0] [const *dim*]))
+   (procedure up-face ([stem "proj_Ucg" d "plus"]
+                       prec&color
+                       count-flops)
+        ([res    pointer "res"    "struct ProjectedFermion *" ]
+         [start  int     "start"  "size_t"                    ]
+         [size   int     "size"   "size_t"                    ]
+         [l-s    int     "Ls"     "size_t"                    ]
+         [link   pointer "link"   "const struct up_pack *"    ]
+         [U      pointer "U"      "const struct SUn *"        ]
+         [src    pointer "src"    "const struct Fermion *"    ])
+     (op int-mul () (bytes-in-s) ([reg l-s] [const (size-of Fermion)]))
+     (op int-mul () (offset-link) ([reg start] [const (size-of up-pack)]))
+     (op pointer-add () (link) ([reg link] [reg offset-link]))
+     (op int-mul () (start*ls) ([reg start] [reg l-s]))
+     (op int-mul () (offset-result) ([reg start*ls] [const (size-of Projected-Fermion)]))
+     (op pointer-add () (res) ([reg res] [reg offset-result]))
+     (loop () (i [const 0] [reg size])
+       (load int () f-idx ([reg link] [const (offset-of up-pack fermion)]))
+       (load int () u-idx ([reg link] [const (offset-of up-pack gauge)]))
+       (op pointer-add () (link) ([reg link] [const (size-of up-pack)]))
+       (op int-mul () (src-off) ([reg f-idx] [reg bytes-in-s]))
+       (op int-mul () (U-off) ([reg u-idx] [const (size-of SU-n)]))
+       (op pointer-add () (f-addr) ([reg src] [reg src-off]))
+       (op pointer-add () (u-addr) ([reg U] [reg U-off]))
+       (load qcd-su-n () V ([reg u-addr]))
+       (loop () (s [const 0] [reg l-s])
+         (load qcd-fermion () f ([reg f-addr]))
+         (op pointer-add () (f-addr) ([reg f-addr] [const (size-of Fermion)]))
+         (macro project-U* [const 'plus] [const d] [reg rr] [reg V] [reg f])
+         (store qcd-projected-fermion () ([reg res]) [reg rr])
+         (op pointer-add () (res) ([reg res]
+                                   [const (size-of Projected-Fermion)]))))))
+

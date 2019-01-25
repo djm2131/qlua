@@ -1,0 +1,9 @@
+#!/bin/sh
+USQCDDIST=/opt/usqcd-20161106/macosx-20160127
+CC='/opt/usqcd-20161106/gcc-6.2.0/bin/gcc -fopenmp' \
+COPTS='-Wunused-label -Wall -O3' \
+./configure \
+   --prefix=$HOME/Local/packages/mdwf-working \
+   --target=cee-64 \
+   --with-qmp=$USQCDDIST/qmp \
+   --with-gsl=$USQCDDIST/gsl

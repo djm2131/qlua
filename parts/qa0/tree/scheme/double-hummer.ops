@@ -1,0 +1,236 @@
+;; This is a conversion dictionary from complex ops to double hummer xlc
+;; intrinsics
+
+;;
+load complex-double (r) (src)
+*   r = M[src, double]
+. load dh-double (r) (src)
+.. r = __lfpd((double *)src);
+
+load complex-float (r) (src)
+*   r = M[src, float]
+. load dh-float (r) (src)
+..  r = __lfps((float *)src);
+
+store complex-double (addr) (v)
+*    M[src, double] = v
+. store dh-double (addr) (v)
+..  __stfpd((double *)addr, v);
+
+store complex-float (addr) (v)
+*    M[src, float] = v
+. dh->float (x) (v) 
+. store dh-float (addr) (x)
+..  x = __fprsp(v);
+..  __stfps((float *)addr, x);
+
+complex-move (r) (s)
+*  r = s
+. dh-move (r) (s)
+.. r = s
+
+complex (x_c) (re_r im_r)
+* x_c = re_r + I * im_r
+. dh-make (x_c) (re_r im_r)
+..  x_c = __cmplx(re_r,im_r)
+
+complex-real (v_r) (a_c)
+* v_r = Re a_c
+. dh-real (v_r) (a_c)
+.. v_r = __creal(a_c)
+
+complex-imag (v_r) (a_c)
+*  v_r = Im a_c
+. dh-imag (v_r) (a_c)
+.. v_r = __cimag(a_c)
+
+complex-times-plus-i (v_c) (a_c)
+*  v_c = I * a_c
+**  v_c.re = - a_c.im
+**  v_c.im = a_c.re
+. dh-times-plus-i (v_c) (a_c)
+.. v_c = __fxcxnpma(gZERO, a_c, gONE)
+
+complex-times-minus-i (v_c) (a_c)
+*  v_c = - I * a_c
+**  v_c.re = a_c.im
+**  v_c.im = - a_c.re
+. dh-times-minus-i (v_c) (a_c)
+.. v_c = __fxcxnsma(gZERO, a_c, gONE)
+
+complex-add (v_c) (a_c b_c)
+* v_c = a_c + b_c
+. dh-add (v_c) (a_c b_c)
+.. v_c = __fpadd(a_c,b_c)
+
+complex-sub (v_c) (a_c b_c)
+*  v_c = a_c - b_c
+. dh-sub (v_c) (a_c b_c)
+.. v_c = __fpsub(a_c,b_c)
+
+complex-rmul (v_c) (a_r b_c)
+*  v_c = a_r * b_c
+**  v_c.re = a_r * b_c.re
+**  v_c.im = a_r * b_c.im
+.  dh-rmul (v_c) (a_r b_c)
+.. v_c = __fxpmul(b_c,a_r)
+
+complex-rmadd (v_c) (a_c b_r c_c)
+*  v_c = a_c + b_r * c_c
+**  v_c.re = a_c.re + b_r * c_c.re
+**  v_c.im = a_c.im + b_r * c_c.im
+.  dh-rmadd (v_c) (a_c b_r c_c)
+..  v_c = __fxcpmadd(a_c, c_c, b_r)
+
+complex-rmsub (v_c) (a_c b_r c_c)
+*  v_c = a_c - b_r * c_c
+**  v_c.re = a_c.re - b_r * c_c.re
+**  v_c.im = a_c.im - b_r * c_c.im
+.  dh-rmsub (v_c) (a_c b_r c_c)
+..  v_c = __fxcpnmsub(a_c, c_c, b_r)
+
+complex-add-i (v_c) (a_c b_c)
+*  v_c = a_c + I * b_c
+**   v_c.re = a_c.re - b_c.im
+**   v_c.im = a_c.im + b_c.re
+.  dh-add-i (v_c) (a_c b_c)
+..  v_c = __fxcxnpma(a_c,b_c,gONE)
+
+complex-sub-i (v_c) (a_c b_c)
+*  v_c = a_c - I * b_c
+**   v_c.re = a_c.re + b_c.im
+**   v_c.im = a_c.im - b_c.re
+.  dh-sub-i (v_c) (a_c b_c)
+..  v_c = __fxcxnsma(a_c,b_c,gONE)
+
+complex-mul (v_c) (a_c b_c)
+*  v_c = a_c * b_c
+**  v_c.re = a_c.re * b_c.re - a_c.im * b_c.im
+**  v_c.im = a_c.re * b_c.im + a_c.im * b_c.re
+.  dh-mul-a (x) (a_c b_c)
+.  dh-mul-b (v_c) (x a_c b_c)
+..  x = __fxpmul(b_c,__creal(a_c))
+..  v_c = __fxcxnpma(x,b_c,__cimag(a_c))
+
+complex-madd (v_c) (a_c b_c c_c)
+*  v_c = a_c + b_c * c_c
+**  v_c.re = a_c.re + b_c.re * c_c.re - b_c.im * c_c.im
+**  v_c.im = a_c.im + b_c.re * c_c.im + b_c.im * c_c.re
+.  dh-madd-a (x) (a_c b_c c_c)
+.  dh-madd-b (v_c) (x b_c c_c)
+..  x = __fxcpmadd(a_c,c_c,__creal(b_c))
+..  v_c = __fxcxnpma(x,c_c,__cimag(b_c))
+
+
+complex-cmul (v_c) (a_c b_c)
+* v_c = conj(a_c) * b_c
+**  v_c.re = a_c.re * b_c.re + a_c.im * b_c.im
+**  v_c.im = a_c.re * b_c.im - a_c.im * b_c.re
+.  dh-cmul-a  (x) (a_c b_c)
+.  dh-cmul-b  (v_c) (x a_c b_c)
+..  x = __fxpmul(b_c,__creal(a_c))
+..  v_c = __fxcxnsma(x,b_c,__cimag(a_c))
+
+complex-cmadd (v_c) (a_c b_c c_c)
+*  v_c = a_c + conj(b_c) * c_c
+**  v_c.re = a_c.re + b_c.re * c_c.re + b_c.im * c_c.im
+**  v_c.im = a_c.im + b_c.re * c_c.im - b_c.im * c_c.re
+.  dh-cmadd-a (x) (a_c b_c c_c)
+.  dh-cmadd-b (v_c) (x b_c c_c)
+..  x = __fxcpmadd(a_c,c_c,__creal(b_c))
+..  v_c = __fxcxnsma(x,c_c,__cimag(b_c))
+
+complex-cmsub (v_c) (a_c b_c c_c)
+*  v_c = a_c - conj(b_c) * c_c
+**  v_c.re = a_c.re - b_c.re * c_c.re - b_c.im * c_c.im
+**  v_c.im = a_c.im - b_c.re * c_c.im + b_c.im * c_c.re
+.  dh-cmsub-a (x) (a_c b_c c_c)
+.  dh-cmsub-b (v_c) (x b_c c_c)
+..  x = __fxcpnmsub(a_c,c_c,__creal(b_c))
+..  v_c = __fxcxnpma(x,c_c,__cimag(b_c))
+
+complex-real-cmul-conj-init (r_x) ())
+*  r_x = 0
+**   r_x.re = 0
+**   r_x.im = 0
+.  dh-real-cmul-conj-init (r_x) ()
+..  r_x = cZERO
+
+complex-real-cmul-conj-add (r_x) (w_x a_c b_c)
+*  r_x = w_x + re (conj(a_c) * b_c)
+**  r_x.re = w_x.re + a_c.re * b_c.re
+**  r_x.im = w_x.im + a_c.im * b_c.im
+.   dh-real-cmul-conj-add (r_x) (w_x a_c b_c)
+..   r_x = __fpmadd(w_x,a_c,b_c)
+
+complex-real-cmul-conj-fini (r_r) (w_x)
+*  r_r = reduce(w_x)
+.   dh-real-cmul-conj-fini (r_r) (w_x)
+..   r_r = __creal(w_x) + __cimag(w_x)
+
+complex-norm-init (r_x) ()
+*  r_x = 0
+**  r_x.re = 0
+**  r_x.im = 0
+.  dh-dot-init (r_x) ()
+..  r_x = cZERO
+
+complex-norm-add (r_x) (w_x a_c)
+*  r_x = w_x + conj(a_c) * a_c
+**  r_x.re = w_x.re + a_c.re * a_c.re
+**  r_x.im = w_x.im + a_c.im * a_c.im
+.  dh-norm-add (r_x) (w_x a_c)
+..  r_x = __fpmadd(w_x,a_c,a_c)
+
+complex-norm-fini (r_r) (w_x)
+*  r_r = reduce(w_x)
+.  dh-norm-fini (r_r) (w_x)
+..  r_r = __creal(w_x) + __cimag(w_x)
+
+complex-dot-init (r_x) ()
+*  r_x = 0
+**  r_x.re = 0
+**  r_x.im = 0
+.  dh-dot-init (r_x) ()
+..  r_x = cZERO
+
+complex-dot-add (r_x) (w_x a_c b_c)
+*  r_x = w_x + conj(a_c) * b_c
+**  r_x.re = w_x.re + a_c.re * b_c.re + a_c.im * b_c.im
+**  r_x.im = w_x.im + a_c.re * b_c.im - a_c.im * b_c.re
+.  dh-dot-add-a (x_x) (w_x a_c b_c)
+.  dh-dot-add-b (r_x) (x_x a_c b_c)
+..  x_x = __fxcpmadd(w_c,b_c,__creal(a_c))
+..  r_x = __fxcxnsma(x_x,b_c,__cimag(a_c))
+
+complex-dot-add-i (r_x) (w_x a_c b_c)
+*  r_x = w_x + I * conj(a_c) * b_c
+**  r_x.re = w_x.re - a_c.re * b_c.im + a_c.im * b_c.re
+**  r_x.im = w_x.im + a_c.re * b_c.re + a_c.im * b_c.im
+.  dh-dot-add-i-a (x_x) (w_x a_c b_c)
+.  dh-dot-add-i-b (r_x) (x_x a_c b_c)
+..  x_x = __fxcxnpma(w_c,b_c,__creal(a_c))
+..  r_x = __fxcpmadd(x_x,b_c,__cimag(a_c))
+
+complex-dot-sub (r_x) (w_x a_c b_c)
+*  r_x = w_x - conj(a_c) * b_c
+**  r_x.re = w_x.re - a_c.re * b_c.re - a_c.im * b_c.im
+**  r_x.im = w_x.im - a_c.re * b_c.im + a_c.im * b_c.re
+.  dh-dot-sub-a (x_x) (w_x a_c b_c)
+.  dh-dot-sub-b (r_x) (x_x a_c b_c)
+..  x_x = __fxcpnmsub(w_c,b_c,__creal(a_c))
+..  r_x = __fxcxnpma(x_x,b_c,__cimag(a_c))
+
+complex-dot-sub-i (r_x) (w_x a_c b_c)
+*  r_x = w_x - I * conj(a_c) * b_c
+**  r_x.re = w_x.re + a_c.re * b_c.im - a_c.im * b_c.re
+**  r_x.im = w_x.im - a_c.re * b_c.re - a_c.im * b_c.im
+.  dh-dot-sub-i-a (x_x) (w_x a_c b_c)
+.  dh-dot-sub-i-b (r_x) (x_x a_c b_c)
+..  x_x = __fxcxnsma(w_c,b_c,__creal(a_c))
+..  r_x = __fxcpnmsub(x_x,b_c,__cimag(a_c))
+
+complex-dot-fini (r_c) (w_x)
+*  r_c = reduce(w_x)
+.   dh-dot-fini (r_c) (w_x)
+.. r_c = w_x

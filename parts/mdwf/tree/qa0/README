@@ -1,0 +1,2 @@
+This directory contains wet qa0 sources. The code implements full qcd
+operations, its target is C99; the output is understood by both gcc and xlc.
