@@ -2876,7 +2876,7 @@ void applyRatFuncQuda(void* hp_x, void* hp_b, QudaInvertParam* param)
   // the solution is on a checkerboard instruction or not. These can
   // then be used as 'instructions' to create the actual
   // ColorSpinorField
-  ColorSpinorParam cpuParam(hp_b, *param, X, pc_solution);
+  ColorSpinorParam cpuParam(hp_b_cp, *param, X, pc_solution);
   ColorSpinorField *h_b = (param->input_location == QUDA_CPU_FIELD_LOCATION) ?
     static_cast<ColorSpinorField*>(new cpuColorSpinorField(cpuParam)) : 
     static_cast<ColorSpinorField*>(new cudaColorSpinorField(cpuParam));
@@ -3092,8 +3092,6 @@ void applyRatFuncQuda(void* hp_x, void* hp_b, QudaInvertParam* param)
   delete b;
 
   delete [] x;
-
-  delete [] hp_x;
 
   delete d;
   delete dSloppy;
