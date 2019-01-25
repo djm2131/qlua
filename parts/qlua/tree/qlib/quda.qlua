@@ -245,7 +245,7 @@ do
       for _ in pairs(residues) do n_residues = n_residues + 1 end
       for _ in pairs(poles) do n_poles = n_poles + 1 end
       if n_residues ~= n_poles then error("Number of poles must match number of residues!") end
-      iparams.num_offset = num_residues
+      iparams.num_offset = n_residues
       iparams.residue0 = residue0
       iparams.residue = residues
       iparams.offset = poles
