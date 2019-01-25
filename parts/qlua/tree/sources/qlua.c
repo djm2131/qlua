@@ -92,63 +92,63 @@ static struct {
     char *name;
     char *value;
 } versions[] = {
-    {"qlua",   QLUA_VERSION},
-    {"lua",    LUA_VERSION },
-    {"qdp",    QDP_VERSION },
+    {"qlua",   "" },
+    {"lua",    "" },
+    {"qdp",    "" },
 #ifdef HAS_AFF
-    {"aff",    AFF_VERSION },
+    {"aff",    "" },
 #endif
 #ifdef HAS_HDF5
-    {"hdf5",    HDF5_VERSION },
+    {"hdf5",    "" },
 #endif
 #ifdef HAS_QUDA
-    {"quda", QUDA_VERSION },
+    {"quda", "" },
 #endif
 #ifdef HAS_CLOVER
-    {"clover", CLOVER_VERSION },
+    {"clover", "" },
 #endif
 #ifdef HAS_TWISTED
-    {"twisted", TWISTED_VERSION },
+    {"twisted", "" },
 #endif
 #ifdef HAS_MDWF
-    {"mdwf", MDWF_VERSION },
+    {"mdwf", "" },
 #endif
 #ifdef HAS_EXTRAS
     {"extras", "included" },
 #endif
 #ifdef HAS_GSL
-    {"gsl",     GSL_VERSION },
+    {"gsl",     "" },
 #endif
 #ifdef HAS_CBLAS
-    {"cblas",     CBLAS_VERSION },
+    {"cblas",     "" },
 #endif
 #ifdef HAS_HYPRE
-    {"hypre",    HYPRE_VERSION },
+    {"hypre",    "" },
 #endif
 #ifdef HAS_QOPQDP
-    {"qopqdp", QOPQDP_VERSION },
+    {"qopqdp", "" },
 #endif
 #ifdef SFC_VERSION
-    {"sfc", SFC_VERSION },
+    {"sfc", "" },
 #endif
 #ifdef QA0_VERSION
-    {"qa0", QA0_VERSION },
+    {"qa0", "" },
 #endif
 #ifdef QMP_VERSION
-    {"qmp", QMP_VERSION },
+    {"qmp", "" },
 #endif
 #ifdef QLA_VERSION
-    {"qla", QLA_VERSION },
+    {"qla", "" },
 #endif
 #ifdef QIO_VERSION
-    {"qio", QIO_VERSION },
+    {"qio", "" },
 #endif
 #ifdef HAS_ARPACK
 #ifdef ARPACK_VERSION
-    {"arpack", ARPACK_VERSION },
+    {"arpack", "" },
 #endif
 #ifdef LAPACK_VERSION
-    {"lapack", LAPACK_VERSION },
+    {"lapack", "" },
 #endif
 #endif
     {"colors",   (
