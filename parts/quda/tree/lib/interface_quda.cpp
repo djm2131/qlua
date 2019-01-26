@@ -2765,15 +2765,6 @@ void invertMultiShiftQuda(void **_hp_x, void *_hp_b, QudaInvertParam *param)
  */
 void applyRatFuncQuda(void* hp_x, void* hp_b, QudaInvertParam* param)
 {
-  // FIXME: DJM: Debug!!
-  printf("residue0 = %1.8e\n", param->residue0);
-  for(int i=0; i<param->num_offset; i++){
-    printf("residue[%d] = %1.8e\n", i, param->residue[i]);
-  }
-  for(int i=0; i<param->num_offset; i++){
-    printf("pole[%d] = %1.8e\n", i, param->offset[i]);
-  }
-
   setTuning(param->tune);
 
   profileMulti.TPSTART(QUDA_PROFILE_TOTAL);
@@ -3066,12 +3057,6 @@ void applyRatFuncQuda(void* hp_x, void* hp_b, QudaInvertParam* param)
   profileMulti.TPSTART(QUDA_PROFILE_D2H);
   if(!param->make_resident_solution){ *h_x = *x[0]; }
   profileMulti.TPSTOP(QUDA_PROFILE_D2H);
-  
-  if(getVerbosity() >= QUDA_VERBOSE ) {
-    double nx = norm2(*x[0]);
-    double nh_x = norm2(*h_x);
-    printfQuda("Result: CPU = %g, CUDA copy = %g\n", nh_x, nx);
-  }
 
   if (param->make_resident_solution) {
     for (unsigned int i=0; i<solutionResident.size(); i++) {
