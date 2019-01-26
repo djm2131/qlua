@@ -1,0 +1,137 @@
+require "stdlib";
+require "gauge";
+require "quda";
+
+-- Clover parameters
+Lx = 16;
+Lt = 16;
+kappa = 0.124235
+c_sw = 1.23344
+
+-- Hard-coded rational approximation to x^(1/2)
+-- Accurate to ~6e-11 over [1e-6,1e+4]
+residue0_sqrt =    7.9153439212502883e+02
+residues_sqrt = { -4.5284682033679711e-11, -2.6052235670165067e-10, -1.0115060471798625e-09, -3.5369315261683121e-09,
+                  -1.1928832220059454e-08, -3.9663619338602914e-08, -1.3109190994890188e-07, -4.3213134474574369e-07,
+                  -1.4228071835611340e-06, -4.6821730684046606e-06, -1.5404433492046607e-05, -5.0675433711387041e-05,
+                  -1.6669719532651716e-04, -5.4833992846669720e-04, -1.8037143172601987e-03, -5.9331458708836264e-03,
+                  -1.9516609635815890e-02, -6.4199236704442331e-02, -2.1118819178552381e-01, -6.9477038150747361e-01,
+                  -2.2860391040302184e+00, -7.5245832808626334e+00, -2.4787193312484106e+01, -8.1797133060668585e+01,
+                  -2.7098433861153131e+02, -9.0554004106949083e+02, -3.0847431892315612e+03, -1.0969405988075723e+04,
+                  -4.2992598806421774e+04, -2.1167141760562462e+05, -1.8829860126054815e+06, -1.6183358652358782e+08 }
+poles_sqrt =    {  1.6597636291074181e-07,  7.7409806384039347e-07,  2.2281004154185002e-06,  5.4933035062109411e-06, 
+                   1.2737493472253422e-05,  2.8770127541402113e-05,  6.4235358958629162e-05,  1.4267874860972494e-04, 
+                   3.1617929250999998e-04,  6.9992495731502509e-04,  1.5486866293894759e-03,  3.4259620421639215e-03, 
+                   7.5780857123940414e-03,  1.6761680738023449e-02,  3.7073813109294501e-02,  8.1999951241704172e-02, 
+                   1.8136745380037628e-01,  4.0115013040488617e-01,  8.8727846967412660e-01,  1.9625719067723493e+00, 
+                   4.3412963481776039e+00,  9.6045239411469865e+00,  2.1255470065263300e+01,  4.7073019985775097e+01, 
+                   1.0441245342093528e+02,  2.3240159742896725e+02,  5.2129411018320195e+02,  1.1898014027225126e+03, 
+                   2.8261197769818427e+03,  7.3898565550570374e+03,  2.5103819379711167e+04,  2.5061446310078833e+05 }
+
+-- Hard-coded rational approximation to x^(-1/2)
+-- Accurate to ~6e-11 over [1e-6,1e+4]
+residue0_invsqrt =   1.2633689830145024e-03
+residues_invsqrt = { 2.5766557396905915e-04, 2.9879098561816489e-04, 3.8760574161496395e-04, 5.3828536162922331e-04,
+                     7.7487947457658497e-04, 1.1351503250062516e-03, 1.6765999191946752e-03, 2.4856477911920521e-03, 
+                     3.6914242352146256e-03, 5.4863805243758465e-03, 8.1570057108783720e-03, 1.2129552794919521e-02, 
+                     1.8038073002034489e-02, 2.6825618578095265e-02, 3.9894772157685769e-02, 5.9331545818620851e-02, 
+                     8.8238443288234908e-02, 1.3123003357938437e-01, 1.9517075510380905e-01, 2.9027475470778924e-01, 
+                     4.3175003408651808e-01, 6.4227147421196196e-01, 9.5575043339773047e-01, 1.4232434786662524e+00, 
+                     2.1227418681651606e+00, 3.1770758269832284e+00, 4.7919112619829356e+00, 7.3524144741894606e+00, 
+                     1.1720859580578596e+01, 2.0375063188602645e+01, 4.3476345938946146e+01, 1.6438373185833728e+02 }
+poles_invsqrt    = { 3.9901926952948248e-08, 3.9834575961305596e-07, 1.3532062395929439e-06, 3.5384204453922718e-06, 
+                     8.4047640027301408e-06, 1.9183028936363070e-05, 4.3028964132040733e-05, 9.5774016148105810e-05, 
+                     2.1243591346002192e-04, 4.7046713007502374e-04, 1.0411760188507363e-03, 2.3034594273200946e-03, 
+                     5.0953547054721823e-03, 1.1270418861479567e-02, 2.4928322944596501e-02, 5.5136684065745296e-02, 
+                     1.2195129202606311e-01, 2.6973216837771069e-01, 5.9659888267142902e-01, 1.3195944700974935e+00, 
+                     2.9188881478919591e+00, 6.4570842223531093e+00, 1.4287245933279618e+01, 3.1627624695515838e+01, 
+                     7.0087522475778172e+01, 1.5567749853224157e+02, 3.4758274830757495e+02, 7.8508381745461861e+02, 
+                     1.8203982337210414e+03, 4.4881280622721479e+03, 1.2918259930000082e+04, 6.0249542914826947e+04 }
+
+printf("---- Test of QUDA multishift Clover inverter: Lx=%d, Lt=%d, kappa=%g, c_sw=%g\n", Lx, Lt, kappa, c_sw);
+
+-- The lattice and a random generator state.
+L = qcd.lattice {Lx, Lx, Lx, Lt};
+do
+  local l_s = 1
+  l_id = L:Int(0)
+  for d = 0, #L - 1 do
+    l_id = l_id + l_s * L:pcoord(d)
+    l_s = l_s * L[d]
+  end
+  S = L:RandomState(1984, l_id)
+end
+
+--- Random SU(3) gauge field
+U = {};
+do
+   for d = 1, #L do
+      U[d] = toSUn(S:gaussian_ColorMatrix() * 0.4);
+   end
+end
+
+--- Random Dirac fermion field
+F_ref = S:gaussian_DiracFermion();
+
+--- compare two fermions
+function check_result(f1, f2)
+   local df = f1 - f2;
+   local nd = df:norm2();
+   local nn = f1:norm2();
+   printf("DiracFermion rel diff %g (%g / %g)\n", nd / nn, nd, nn);
+   if nd / nn < 1.0e-10 then
+      return true;
+   else
+      return false;
+   end
+end
+
+--- compare two fermions modulo norm
+function check_norm_result(f1, f2)
+   local nx1 = math.sqrt(f1:norm2());
+   local nx2 = math.sqrt(f2:norm2());
+   local df = f1/nx1 - f2/nx2;
+   local nd = df:norm2();
+   printf("DiracFermion scaled rel diff %g (%g, %g) ratio: %g\n", nd, nx1, nx2, nx1 / nx2);
+end
+
+--- Test of the multishift inverter: if we apply (DdagD)^(1/2) followed 
+-- by (DdagD)^(-1/2) we should (approximately) get back the source
+function run_test(U, kappa, c_sw, src, a0, a, b)
+   local RF = qcd.quda.rational_function(U,
+                              {t_boundary          = "ANTI_PERIODIC_T"},
+                              {clover_coeff        = c_sw * kappa,
+                               dslash_type         = "CLOVER_WILSON_DSLASH",
+                               --dslash_type         = "WILSON_DSLASH",
+                               kappa               = kappa,
+                               tol                 = 1e-12,
+                               maxiter             = 10000,
+                               verbosity           = "VERBOSE",
+                               preserve_source     = "PRESERVE_SOURCE_YES",
+                            }, a0, a, b);
+   result,ipres = RF:apply(src)
+   RF:close()
+   return result
+end
+
+-- Apply (DdagD)^(1/2) to random source
+qcd.quda.init(L);
+F_sqrt = run_test(U, kappa, c_sw, F_ref, residue0_sqrt, residues_sqrt, poles_sqrt);
+qcd.quda.fini(L);
+
+-- Apply (DdagD)^(-1/2) to result
+qcd.quda.init(L);
+F_out = run_test(U, kappa, c_sw, F_sqrt, residue0_invsqrt, residues_invsqrt, poles_invsqrt);
+qcd.quda.fini(L);
+
+-- We should approximately get back the source
+status = check_result(F_out, F_ref);
+check_norm_result(F_out, F_ref);
+
+if status then
+   printf("DONE\n");
+   os.exit(0);
+else
+   printf("ERROR: Quda clover inverter test failed\n");
+   os.exit(1);
+end
