@@ -1,5 +1,5 @@
 #installation prefix
-PREFIX   = /data/wombat/users/djmurphy/Software/qlua
+PREFIX   = /data/wombat/users/djmurphy/Software/qlua/djm
 
 #parallel jobs in make
 XJOBS    = 32
