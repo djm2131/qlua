@@ -3,7 +3,7 @@ require "gauge";
 require "quda";
 
 -- parameters.
-Lx = 8;
+Lx = 16;
 Lt = 16;
 kappa = 0.124235
 c_sw = 1.23344
@@ -85,7 +85,7 @@ function run_solver(U, kappa, c_sw, rhs)
                                kappa               = kappa,
                                tol                 = 1e-12,
                                maxiter             = 10000,
-                               -- verbosity  = "DEBUG_VERBOSE"
+                               verbosity           = "VERBOSE"
                             });
    local rhs,ipres = QS:solve(rhs);
    printf("  QS solver iparams output:\n");

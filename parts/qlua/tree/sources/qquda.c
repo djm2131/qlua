@@ -764,6 +764,42 @@ qq_invertQuda(lua_State *L)
 }
 
 static int
+qq_invertMultiShiftQuda(lua_State* L)
+{
+  QDP_D3_DiracFermion* rhs = qlua_checkLatDirFerm3(L, 1, NULL, 3) -> ptr;
+  QudaInvertParam* p = qq_checkInvertParam(L,2);
+  mLattice* S = qlua_ObjLattice(L,1);
+  
+  QDP_D3_DiracFermion** multishift_sols = qlua_malloc(L, p->num_offset * sizeof(QDP_D3_DiracFermion*));
+  int Sidx = lua_gettop(L);
+  lua_createtable(L, p->num_offset, 0);
+  for(int idx=0; idx<p->num_offset; idx++){
+    multishift_sols[idx] = qlua_newZeroLatDirFerm3(L, Sidx, 3) -> ptr;
+    lua_rawseti(L, -2, idx+1);
+  }
+
+  QUDA_REAL* q_rhs;
+  QUDA_REAL** q_msols = qlua_malloc(L, p->num_offset * sizeof(QUDA_REAL*));
+
+  CALL_QDP(L);
+  get_fermion_field(&q_rhs, rhs, L, S);
+  for(int idx=0; idx<p->num_offset; idx++){
+    get_fermion_field(&q_msols[idx], multishift_sols[idx], L, S);
+  }
+
+  invertMultiShiftQuda(q_msols, q_rhs, p);
+
+  for(int idx=0; idx<p->num_offset; idx++){
+    put_fermion_field(multishift_sols[idx], q_msols[idx], L, S);
+  }
+
+  qlua_free(L, q_msols);
+  qlua_free(L, multishift_sols);
+
+  return 1;
+}
+
+static int
 qq_applyRatFuncQuda(lua_State* L)
 {
   QDP_D3_DiracFermion* in = qlua_checkLatDirFerm3(L, 1, NULL, 3) -> ptr;
@@ -811,6 +847,7 @@ static struct luaL_Reg fquda[] = {
   {"freeCloverQuda",          qq_freeCloverQuda        },
   {"freeGaugeQuda",           qq_freeGaugeQuda         },
   {"invertQuda",              qq_invertQuda            },
+  {"invertMultiShiftQuda",    qq_invertMultiShiftQuda  },
   {"applyRatFuncQuda",        qq_applyRatFuncQuda      },
   {"loadCloverQuda",          qq_loadCloverQuda        },
   {"loadGaugeQuda",           qq_loadGaugeQuda         },

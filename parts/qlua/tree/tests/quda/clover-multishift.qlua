@@ -3,7 +3,7 @@ require "gauge";
 require "quda";
 
 -- Clover parameters
-Lx = 16;
+Lx = 8;
 Lt = 16;
 kappa = 0.124235
 c_sw = 1.23344
@@ -109,7 +109,7 @@ function run_test(U, kappa, c_sw, src, a0, a, b)
                                verbosity           = "VERBOSE",
                                preserve_source     = "PRESERVE_SOURCE_YES",
                             }, a0, a, b);
-   result,ipres = RF:apply_rf(src)
+   result,ipres = RF:solve(src)
    RF:close()
    return result
 end
@@ -119,14 +119,26 @@ qcd.quda.init(L);
 F_sqrt = run_test(U, kappa, c_sw, F_ref, residue0_sqrt, residues_sqrt, poles_sqrt);
 qcd.quda.fini(L);
 
+-- X = (DdagD)^(1/2) * F_ref
+X = residue0_sqrt * F_ref;
+for i = 1,32 do
+  X = X + residues_sqrt[i] * F_sqrt[i];
+end
+
 -- Apply (DdagD)^(-1/2) to result
 qcd.quda.init(L);
-F_out = run_test(U, kappa, c_sw, F_sqrt, residue0_invsqrt, residues_invsqrt, poles_invsqrt);
+F_out = run_test(U, kappa, c_sw, X, residue0_invsqrt, residues_invsqrt, poles_invsqrt);
 qcd.quda.fini(L);
 
+-- Y = (DdagD)^(-1/2) * (DdagD)^(1/2) * F_ref
+Y = residue0_invsqrt * X;
+for i = 1,32 do
+  Y = Y + residues_invsqrt[i] * F_out[i];
+end
+
 -- We should approximately get back the source
-status = check_result(F_out, F_ref);
-check_norm_result(F_out, F_ref);
+status = check_result(Y, F_ref);
+check_norm_result(Y, F_ref);
 
 if status then
    printf("DONE\n");
