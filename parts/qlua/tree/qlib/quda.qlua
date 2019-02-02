@@ -257,6 +257,15 @@ do
       iparams.residue0 = residue0
       iparams.residue = residues
       iparams.offset = poles
+      iparams.tol    = 1.0e-10
+      tol_offset = {}
+      tol_hq_offset = {}
+      for i = 1, n_poles do
+        tol_offset[i] = iparams.tol
+        tol_hq_offset[i] = iparams.tol
+      end
+      iparams.tol_offset = tol_offset
+      iparams.tol_hq_offset = tol_hq_offset
       for i,v in pairs(ipx) do
          iparams[i] = v;
       end

@@ -99,15 +99,17 @@ end
 -- by (DdagD)^(-1/2) we should (approximately) get back the source
 function run_test(U, kappa, c_sw, src, a0, a, b)
    local RF = qcd.quda.multishift_solver(U,
-                              {t_boundary          = "ANTI_PERIODIC_T"},
-                              {clover_coeff        = c_sw * kappa,
-                               dslash_type         = "CLOVER_WILSON_DSLASH",
-                               --dslash_type         = "WILSON_DSLASH",
-                               kappa               = kappa,
-                               tol                 = 1e-12,
-                               maxiter             = 10000,
-                               verbosity           = "VERBOSE",
-                               preserve_source     = "PRESERVE_SOURCE_YES",
+                              {t_boundary              = "ANTI_PERIODIC_T"},
+                              {clover_coeff            = c_sw * kappa,
+                               dslash_type             = "CLOVER_WILSON_DSLASH",
+                               --dslash_type             = "WILSON_DSLASH",
+                               kappa                   = kappa,
+                               tol                     = 1e-12,
+                               maxiter                 = 10000,
+                               verbosity               = "VERBOSE",
+                               preserve_source         = "PRESERVE_SOURCE_YES",
+                               cuda_prec_sloppy        = "SINGLE_PRECISION",
+                               clover_cuda_prec_sloppy = "SINGLE_PRECISION",
                             }, a0, a, b);
    result,ipres = RF:apply_rf(src)
    RF:close()
