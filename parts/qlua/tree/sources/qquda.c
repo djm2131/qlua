@@ -433,6 +433,8 @@ qq_ip_put(lua_State *L)
   PUT_INT_VALUE(use_sloppy_partial_accumulator);
   PUT_DOUBLE_ARRAY_VALUE(offset, p->num_offset);
   PUT_DOUBLE_ARRAY_VALUE(residue, p->num_offset);
+  PUT_DOUBLE_ARRAY_VALUE(tol_offset, p->num_offset);
+  PUT_DOUBLE_ARRAY_VALUE(tol_hq_offset, p->num_offset);
 
 #undef PUT_NAMED_VALUE
 #undef PUT_DOUBLE_VALUE
