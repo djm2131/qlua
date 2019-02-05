@@ -789,7 +789,7 @@ qq_invertMultiShiftQuda(lua_State* L)
     get_fermion_field(&q_msols[idx], multishift_sols[idx], L, S);
   }
 
-  invertMultiShiftQuda(q_msols, q_rhs, p);
+  invertMultiShiftQuda((void**) q_msols, q_rhs, p);
 
   for(int idx=0; idx<p->num_offset; idx++){
     put_fermion_field(multishift_sols[idx], q_msols[idx], L, S);
