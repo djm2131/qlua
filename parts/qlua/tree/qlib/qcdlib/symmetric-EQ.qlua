@@ -26,7 +26,8 @@ function qcdLib.symmetricEQ(U, opts)
    end
 
    local function toAlg(V)
-      local scaledUnit = V.lattice:ColorMatrix(complex(1.0/V:colors(), 0));
+      local Nc = V:colors()
+      local scaledUnit = V.lattice:ColorMatrixN(Nc, complex(1.0/Nc, 0))
       local X = (V - V:adjoin()) / 2.0;
       return X - scaledUnit * X:trace();
    end
